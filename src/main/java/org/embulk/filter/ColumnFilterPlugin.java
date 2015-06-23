@@ -16,6 +16,7 @@ import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfig;
 import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
+import java.util.HashMap;
 
 public class ColumnFilterPlugin
         implements FilterPlugin
@@ -44,6 +45,16 @@ public class ColumnFilterPlugin
     {
         PluginTask task = taskSource.loadTask(PluginTask.class);
 
+        HashMap<Column, Column> columnMap = new HashMap<Column, Column>();
+        for (Column outputColumn: outputSchema.getColumns()) {
+            for (Column inputColumn: inputSchema.getColumns()) {
+                if (inputColumn.getName().equals(outputColumn.getName())) {
+                    columnMap.put(inputColumn, outputColumn);
+                    break;
+                }
+            }
+        }
+
         return new PageOutput() {
             private PageReader pageReader = new PageReader(inputSchema);
             private PageBuilder pageBuilder = new PageBuilder(Exec.getBufferAllocator(), outputSchema, output);
@@ -64,7 +75,7 @@ public class ColumnFilterPlugin
 
                 ColumnVisitorImpl visitor = new ColumnVisitorImpl(pageBuilder);
                 while (pageReader.nextRecord()) {
-                    outputSchema.visitColumns(visitor);
+                    inputSchema.visitColumns(visitor);
                     pageBuilder.addRecord();
                 }
             }
@@ -77,47 +88,57 @@ public class ColumnFilterPlugin
                 }
 
                 @Override
-                public void booleanColumn(Column column) {
-                    if (pageReader.isNull(column)) {
-                        pageBuilder.setNull(column);
+                public void booleanColumn(Column inputColumn) {
+                    Column outputColumn = (Column)columnMap.get(inputColumn);
+                    if (outputColumn == null) { return; }
+                    if (pageReader.isNull(inputColumn)) {
+                        pageBuilder.setNull(outputColumn);
                     } else {
-                        pageBuilder.setBoolean(column, pageReader.getBoolean(column));
+                        pageBuilder.setBoolean(outputColumn, pageReader.getBoolean(inputColumn));
                     }
                 }
 
                 @Override
-                public void longColumn(Column column) {
-                    if (pageReader.isNull(column)) {
-                        pageBuilder.setNull(column);
+                public void longColumn(Column inputColumn) {
+                    Column outputColumn = (Column)columnMap.get(inputColumn);
+                    if (outputColumn == null) { return; }
+                    if (pageReader.isNull(inputColumn)) {
+                        pageBuilder.setNull(outputColumn);
                     } else {
-                        pageBuilder.setLong(column, pageReader.getLong(column));
+                        pageBuilder.setLong(outputColumn, pageReader.getLong(inputColumn));
                     }
                 }
 
                 @Override
-                public void doubleColumn(Column column) {
-                    if (pageReader.isNull(column)) {
-                        pageBuilder.setNull(column);
+                public void doubleColumn(Column inputColumn) {
+                    Column outputColumn = (Column)columnMap.get(inputColumn);
+                    if (outputColumn == null) { return; }
+                    if (pageReader.isNull(inputColumn)) {
+                        pageBuilder.setNull(outputColumn);
                     } else {
-                        pageBuilder.setDouble(column, pageReader.getDouble(column));
+                        pageBuilder.setDouble(outputColumn, pageReader.getDouble(inputColumn));
                     }
                 }
 
                 @Override
-                public void stringColumn(Column column) {
-                    if (pageReader.isNull(column)) {
-                        pageBuilder.setNull(column);
+                public void stringColumn(Column inputColumn) {
+                    Column outputColumn = (Column)columnMap.get(inputColumn);
+                    if (outputColumn == null) { return; }
+                    if (pageReader.isNull(inputColumn)) {
+                        pageBuilder.setNull(outputColumn);
                     } else {
-                        pageBuilder.setString(column, pageReader.getString(column));
+                        pageBuilder.setString(outputColumn, pageReader.getString(inputColumn));
                     }
                 }
 
                 @Override
-                public void timestampColumn(Column column) {
-                    if (pageReader.isNull(column)) {
-                        pageBuilder.setNull(column);
+                public void timestampColumn(Column inputColumn) {
+                    Column outputColumn = (Column)columnMap.get(inputColumn);
+                    if (outputColumn == null) { return; }
+                    if (pageReader.isNull(inputColumn)) {
+                        pageBuilder.setNull(outputColumn);
                     } else {
-                        pageBuilder.setTimestamp(column, pageReader.getTimestamp(column));
+                        pageBuilder.setTimestamp(outputColumn, pageReader.getTimestamp(inputColumn));
                     }
                 }
             }
