@@ -8,7 +8,7 @@ in:
 filters:
   - type: column
     columns:
-    - {name: id, type: long}
-    - {name: name, type: string}
+      - {name: id}
+      - {name: name}
 out:
   type: stdout

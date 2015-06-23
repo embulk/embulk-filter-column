@@ -4,7 +4,7 @@ A filter plugin for Embulk to filter out columns
 
 ## Configuration
 
-- **columns**: column names and types (array of hash, required)
+- **columns**: column names (array of hash, required)
 
 ## Example
 
@@ -12,8 +12,8 @@ A filter plugin for Embulk to filter out columns
 filters:
   - type: column
     columns
-    - {name: id, type: long}
-    - {name: name, type: string}
+    - {name: id}
+    - {name: name}
 ```
 
 

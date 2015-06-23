@@ -6,6 +6,13 @@ import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
 import org.embulk.config.TaskSource;
+
+import java.util.List;
+import java.util.HashMap;
+import org.embulk.spi.type.Type;
+import org.embulk.spi.type.TimestampType;
+import com.google.common.collect.ImmutableList;
+
 import org.embulk.spi.FilterPlugin;
 import org.embulk.spi.Exec;
 import org.embulk.spi.Page;
@@ -14,15 +21,13 @@ import org.embulk.spi.PageOutput;
 import org.embulk.spi.PageReader;
 import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfig;
+import org.embulk.spi.ColumnConfig;
 import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
-import java.util.HashMap;
 
-public class ColumnFilterPlugin
-        implements FilterPlugin
+public class ColumnFilterPlugin implements FilterPlugin
 {
-    public interface PluginTask
-            extends Task
+    public interface PluginTask extends Task
     {
         @Config("columns")
         public SchemaConfig getColumns();
@@ -34,7 +39,23 @@ public class ColumnFilterPlugin
     {
         PluginTask task = config.loadConfig(PluginTask.class);
 
-        Schema outputSchema = task.getColumns().toSchema();
+        //Schema outputSchema = task.getColumns().toSchema();
+        // Automatically get column type from inputSchema
+        SchemaConfig schemaConfig = task.getColumns();
+        List<ColumnConfig> outputColumnConfigs = schemaConfig.getColumns();
+        ImmutableList.Builder<Column> builder = ImmutableList.builder();
+        for (int i = 0; i < outputColumnConfigs.size(); i++) {
+            String outputColumnName = outputColumnConfigs.get(i).getName();
+            for (Column inputColumn: inputSchema.getColumns()) {
+                if (inputColumn.getName().equals(outputColumnName)) {
+                    Type outputColumnType = inputColumn.getType();
+                    Column outputColumn = new Column(i, outputColumnName, outputColumnType);
+                    builder.add(outputColumn);
+                    break;
+                }
+            }
+        }
+        Schema outputSchema = new Schema(builder.build());
 
         control.run(task.dump(), outputSchema);
     }
