@@ -54,7 +54,7 @@ Gem::Specification.new do |spec|
   spec.version       = "${project.version}"
   spec.authors       = ["Naotoshi Seo"]
   spec.summary       = %[A filter plugin for Embulk to filter out columns]
-  spec.description   = %[A filter plugin for Embulk to filter out columns]
+  spec.description   = %[A filter plugin for Embulk to filter out columns.]
   spec.email         = ["sonots@gmail.com"]
   spec.licenses      = ["MIT"]
   spec.homepage      = "https://github.com/sonots/embulk-filter-column"
