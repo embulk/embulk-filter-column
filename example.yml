@@ -1,0 +1,14 @@
+in:
+  type: random
+  rows: 100
+  schema:
+    id: primary_key
+    name: string
+    score: integer
+filters:
+  - type: column
+    columns:
+    - {name: id, type: long}
+    - {name: name, type: string}
+out:
+  type: stdout

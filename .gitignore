@@ -1,0 +1,9 @@
+*~
+/pkg/
+/tmp/
+*.gemspec
+.gradle/
+/classpath/
+build/
+.idea
+*.csv
