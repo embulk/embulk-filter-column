@@ -11,11 +11,12 @@ A filter plugin for Embulk to filter out columns
 ```yaml
 filters:
   - type: column
-    columns
-    - {name: id}
-    - {name: name}
+    columns:
+      - {name: id}
+      - {name: name}
 ```
 
+reduces columns to only `id` and `name` columns.
 
 ## Build
 
