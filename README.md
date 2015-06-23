@@ -11,7 +11,7 @@ A filter plugin for Embulk to filter out columns
 ```yaml
 filters:
   - type: column
-    coolumns
+    columns
     - {name: id, type: long}
     - {name: name, type: string}
 ```
