@@ -52,12 +52,12 @@ task gemspec {
 Gem::Specification.new do |spec|
   spec.name          = "${project.name}"
   spec.version       = "${project.version}"
-  spec.authors       = ["sonots"]
-  spec.summary       = %[Column filter plugin for Embulk]
-  spec.description   = %[Column]
+  spec.authors       = ["Naotoshi Seo"]
+  spec.summary       = %[A filter plugin for Embulk to filter out columns]
+  spec.description   = %[A filter plugin for Embulk to filter out columns]
   spec.email         = ["sonots@gmail.com"]
   spec.licenses      = ["MIT"]
-  # TODO set this: spec.homepage      = "https://github.com/sonots/embulk-filter-column"
+  spec.homepage      = "https://github.com/sonots/embulk-filter-column"
 
   spec.files         = `git ls-files`.split("\n") + Dir["classpath/*.jar"]
   spec.test_files    = spec.files.grep(%r"^(test|spec)/")
