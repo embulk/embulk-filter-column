@@ -18,8 +18,17 @@ filters:
 
 reduces columns to only `id` and `name` columns.
 
-## Build
+## Development
+
+Run example:
 
 ```
-$ ./gradlew gem
+$ ./gradlew classpath
+$ embulk run -I lib example.yml
+```
+
+Release gem:
+
+```
+$ ./gradlew gemPush
 ```
