@@ -44,12 +44,13 @@ public class ColumnFilterPlugin implements FilterPlugin
         SchemaConfig schemaConfig = task.getColumns();
         List<ColumnConfig> outputColumnConfigs = schemaConfig.getColumns();
         ImmutableList.Builder<Column> builder = ImmutableList.builder();
-        for (int i = 0; i < outputColumnConfigs.size(); i++) {
-            String outputColumnName = outputColumnConfigs.get(i).getName();
+        int i = 0;
+        for (ColumnConfig outputColumnConfig : outputColumnConfigs) {
+            String outputColumnName = outputColumnConfig.getName();
             for (Column inputColumn: inputSchema.getColumns()) {
                 if (inputColumn.getName().equals(outputColumnName)) {
                     Type outputColumnType = inputColumn.getType();
-                    Column outputColumn = new Column(i, outputColumnName, outputColumnType);
+                    Column outputColumn = new Column(i++, outputColumnName, outputColumnType);
                     builder.add(outputColumn);
                     break;
                 }
@@ -70,7 +71,7 @@ public class ColumnFilterPlugin implements FilterPlugin
         for (Column outputColumn: outputSchema.getColumns()) {
             for (Column inputColumn: inputSchema.getColumns()) {
                 if (inputColumn.getName().equals(outputColumn.getName())) {
-                    columnMap.put(inputColumn, outputColumn);
+                    columnMap.put(outputColumn, inputColumn);
                     break;
                 }
             }
@@ -96,7 +97,7 @@ public class ColumnFilterPlugin implements FilterPlugin
 
                 ColumnVisitorImpl visitor = new ColumnVisitorImpl(pageBuilder);
                 while (pageReader.nextRecord()) {
-                    inputSchema.visitColumns(visitor);
+                    outputSchema.visitColumns(visitor);
                     pageBuilder.addRecord();
                 }
             }
@@ -109,9 +110,8 @@ public class ColumnFilterPlugin implements FilterPlugin
                 }
 
                 @Override
-                public void booleanColumn(Column inputColumn) {
-                    Column outputColumn = (Column)columnMap.get(inputColumn);
-                    if (outputColumn == null) { return; }
+                public void booleanColumn(Column outputColumn) {
+                    Column inputColumn = columnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
                         pageBuilder.setNull(outputColumn);
                     } else {
@@ -120,9 +120,8 @@ public class ColumnFilterPlugin implements FilterPlugin
                 }
 
                 @Override
-                public void longColumn(Column inputColumn) {
-                    Column outputColumn = (Column)columnMap.get(inputColumn);
-                    if (outputColumn == null) { return; }
+                public void longColumn(Column outputColumn) {
+                    Column inputColumn = columnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
                         pageBuilder.setNull(outputColumn);
                     } else {
@@ -131,9 +130,8 @@ public class ColumnFilterPlugin implements FilterPlugin
                 }
 
                 @Override
-                public void doubleColumn(Column inputColumn) {
-                    Column outputColumn = (Column)columnMap.get(inputColumn);
-                    if (outputColumn == null) { return; }
+                public void doubleColumn(Column outputColumn) {
+                    Column inputColumn = columnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
                         pageBuilder.setNull(outputColumn);
                     } else {
@@ -142,9 +140,8 @@ public class ColumnFilterPlugin implements FilterPlugin
                 }
 
                 @Override
-                public void stringColumn(Column inputColumn) {
-                    Column outputColumn = (Column)columnMap.get(inputColumn);
-                    if (outputColumn == null) { return; }
+                public void stringColumn(Column outputColumn) {
+                    Column inputColumn = columnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
                         pageBuilder.setNull(outputColumn);
                     } else {
@@ -153,9 +150,8 @@ public class ColumnFilterPlugin implements FilterPlugin
                 }
 
                 @Override
-                public void timestampColumn(Column inputColumn) {
-                    Column outputColumn = (Column)columnMap.get(inputColumn);
-                    if (outputColumn == null) { return; }
+                public void timestampColumn(Column outputColumn) {
+                    Column inputColumn = columnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
                         pageBuilder.setNull(outputColumn);
                     } else {
