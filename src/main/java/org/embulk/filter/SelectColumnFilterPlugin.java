@@ -25,12 +25,12 @@ import org.embulk.spi.ColumnConfig;
 import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
 
-public class ColumnFilterPlugin implements FilterPlugin
+public class SelectColumnFilterPlugin implements FilterPlugin
 {
     public interface PluginTask extends Task
     {
         @Config("columns")
-        public SchemaConfig getColumns();
+        public List<String> getColumns();
     }
 
     @Override
@@ -39,18 +39,13 @@ public class ColumnFilterPlugin implements FilterPlugin
     {
         PluginTask task = config.loadConfig(PluginTask.class);
 
-        //Schema outputSchema = task.getColumns().toSchema();
-        // Automatically get column type from inputSchema
-        SchemaConfig schemaConfig = task.getColumns();
-        List<ColumnConfig> outputColumnConfigs = schemaConfig.getColumns();
+        List<String> columnNames = task.getColumns();
         ImmutableList.Builder<Column> builder = ImmutableList.builder();
         int i = 0;
-        for (ColumnConfig outputColumnConfig : outputColumnConfigs) {
-            String outputColumnName = outputColumnConfig.getName();
+        for (String columnName : columnNames) {
             for (Column inputColumn: inputSchema.getColumns()) {
-                if (inputColumn.getName().equals(outputColumnName)) {
-                    Type outputColumnType = inputColumn.getType();
-                    Column outputColumn = new Column(i++, outputColumnName, outputColumnType);
+                if (inputColumn.getName().equals(columnName)) {
+                    Column outputColumn = new Column(i++, columnName, inputColumn.getType());
                     builder.add(outputColumn);
                     break;
                 }

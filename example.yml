@@ -6,10 +6,7 @@ in:
     name: string
     score: integer
 filters:
-  - type: column
-    columns:
-      - {name: name}
-      - {name: foo}
-      - {name: id}
+  - type: select_column
+    columns: [name, foo, id]
 out:
   type: stdout

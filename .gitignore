@@ -7,3 +7,5 @@
 build/
 .idea
 *.csv
+.tags
+.ruby-version
