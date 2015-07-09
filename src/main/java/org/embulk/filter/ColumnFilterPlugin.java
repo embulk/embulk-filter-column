@@ -21,16 +21,16 @@ import org.embulk.spi.PageOutput;
 import org.embulk.spi.PageReader;
 import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfig;
-import org.embulk.spi.ColumnConfig;
 import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
+import org.embulk.filter.column.ColumnConfig; // note: different with spi.ColumnConfig
 
 public class ColumnFilterPlugin implements FilterPlugin
 {
     public interface PluginTask extends Task
     {
         @Config("columns")
-        public SchemaConfig getColumns();
+        public List<ColumnConfig> getColumns();
     }
 
     @Override
@@ -39,18 +39,15 @@ public class ColumnFilterPlugin implements FilterPlugin
     {
         PluginTask task = config.loadConfig(PluginTask.class);
 
-        //Schema outputSchema = task.getColumns().toSchema();
         // Automatically get column type from inputSchema
-        SchemaConfig schemaConfig = task.getColumns();
-        List<ColumnConfig> outputColumnConfigs = schemaConfig.getColumns();
+        List<ColumnConfig> columnConfigs = task.getColumns();
         ImmutableList.Builder<Column> builder = ImmutableList.builder();
         int i = 0;
-        for (ColumnConfig outputColumnConfig : outputColumnConfigs) {
-            String outputColumnName = outputColumnConfig.getName();
+        for (ColumnConfig columnConfig : columnConfigs) {
+            String columnName = columnConfig.getName();
             for (Column inputColumn: inputSchema.getColumns()) {
-                if (inputColumn.getName().equals(outputColumnName)) {
-                    Type outputColumnType = inputColumn.getType();
-                    Column outputColumn = new Column(i++, outputColumnName, outputColumnType);
+                if (inputColumn.getName().equals(columnName)) {
+                    Column outputColumn = new Column(i++, columnName, inputColumn.getType());
                     builder.add(outputColumn);
                     break;
                 }
@@ -67,11 +64,21 @@ public class ColumnFilterPlugin implements FilterPlugin
     {
         PluginTask task = taskSource.loadTask(PluginTask.class);
 
-        HashMap<Column, Column> columnMap = new HashMap<Column, Column>();
+        HashMap<Column, Column> outputInputColumnMap = new HashMap<Column, Column>();
         for (Column outputColumn: outputSchema.getColumns()) {
             for (Column inputColumn: inputSchema.getColumns()) {
                 if (inputColumn.getName().equals(outputColumn.getName())) {
-                    columnMap.put(outputColumn, inputColumn);
+                    outputInputColumnMap.put(outputColumn, inputColumn);
+                    break;
+                }
+            }
+        }
+
+        HashMap<Column, ColumnConfig> outputColumnConfigMap = new HashMap<Column, ColumnConfig>();
+        for (Column outputColumn: outputSchema.getColumns()) {
+            for (ColumnConfig columnConfig : task.getColumns()) {
+                if (columnConfig.getName().equals(outputColumn.getName())) {
+                    outputColumnConfigMap.put(outputColumn, columnConfig);
                     break;
                 }
             }
@@ -111,9 +118,16 @@ public class ColumnFilterPlugin implements FilterPlugin
 
                 @Override
                 public void booleanColumn(Column outputColumn) {
-                    Column inputColumn = columnMap.get(outputColumn);
+                    Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
-                        pageBuilder.setNull(outputColumn);
+                        ColumnConfig columnConfig = outputColumnConfigMap.get(outputColumn);
+                        // ToDo: speed up
+                        if (columnConfig.getDefault().isPresent()) {
+                            boolean default_value = ((Boolean)columnConfig.getDefault().get()).booleanValue();
+                            pageBuilder.setBoolean(outputColumn, default_value);
+                        } else {
+                            pageBuilder.setNull(outputColumn);
+                        }
                     } else {
                         pageBuilder.setBoolean(outputColumn, pageReader.getBoolean(inputColumn));
                     }
@@ -121,9 +135,16 @@ public class ColumnFilterPlugin implements FilterPlugin
 
                 @Override
                 public void longColumn(Column outputColumn) {
-                    Column inputColumn = columnMap.get(outputColumn);
+                    Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
-                        pageBuilder.setNull(outputColumn);
+                        ColumnConfig columnConfig = outputColumnConfigMap.get(outputColumn);
+                        // ToDo: speed up
+                        if (columnConfig.getDefault().isPresent()) {
+                            long default_value = ((Integer)columnConfig.getDefault().get()).longValue();
+                            pageBuilder.setLong(outputColumn, default_value);
+                        } else {
+                            pageBuilder.setNull(outputColumn);
+                        }
                     } else {
                         pageBuilder.setLong(outputColumn, pageReader.getLong(inputColumn));
                     }
@@ -131,9 +152,15 @@ public class ColumnFilterPlugin implements FilterPlugin
 
                 @Override
                 public void doubleColumn(Column outputColumn) {
-                    Column inputColumn = columnMap.get(outputColumn);
+                    Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
-                        pageBuilder.setNull(outputColumn);
+                        ColumnConfig columnConfig = outputColumnConfigMap.get(outputColumn);
+                        if (columnConfig.getDefault().isPresent()) {
+                            double default_value = ((Double)columnConfig.getDefault().get()).doubleValue();
+                            pageBuilder.setDouble(outputColumn, default_value);
+                        } else {
+                            pageBuilder.setNull(outputColumn);
+                        }
                     } else {
                         pageBuilder.setDouble(outputColumn, pageReader.getDouble(inputColumn));
                     }
@@ -141,9 +168,15 @@ public class ColumnFilterPlugin implements FilterPlugin
 
                 @Override
                 public void stringColumn(Column outputColumn) {
-                    Column inputColumn = columnMap.get(outputColumn);
+                    Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
-                        pageBuilder.setNull(outputColumn);
+                        ColumnConfig columnConfig = outputColumnConfigMap.get(outputColumn);
+                        if (columnConfig.getDefault().isPresent()) {
+                            String default_value = (String)columnConfig.getDefault().get();
+                            pageBuilder.setString(outputColumn, default_value);
+                        } else {
+                            pageBuilder.setNull(outputColumn);
+                        }
                     } else {
                         pageBuilder.setString(outputColumn, pageReader.getString(inputColumn));
                     }
@@ -151,8 +184,9 @@ public class ColumnFilterPlugin implements FilterPlugin
 
                 @Override
                 public void timestampColumn(Column outputColumn) {
-                    Column inputColumn = columnMap.get(outputColumn);
+                    Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
+                        // ToDo: default for timestamp
                         pageBuilder.setNull(outputColumn);
                     } else {
                         pageBuilder.setTimestamp(outputColumn, pageReader.getTimestamp(inputColumn));

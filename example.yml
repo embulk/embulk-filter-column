@@ -1,15 +1,29 @@
+# in:
+#   type: random
+#   rows: 100
+#   schema:
+#     id: primary_key
+#     name: string
+#     score: integer
 in:
-  type: random
-  rows: 100
-  schema:
-    id: primary_key
-    name: string
-    score: integer
+  type: file
+  path_prefix: example.csv
+  parser:
+    type: csv
+    charset: UTF-8
+    newline: CRLF
+    null_string: 'NULL'
+    skip_header_lines: 1
+    comment_line_marker: '#'
+    columns:
+      - {name: id, type: long}
+      - {name: name, type: string}
+      - {name: score, type: double}
 filters:
   - type: column
     columns:
-      - {name: name}
-      - {name: foo}
+      - {name: name, default: "foo"}
+      - {name: foo,  default: 1}
       - {name: id}
 out:
   type: stdout
