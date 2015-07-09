@@ -1,3 +1,9 @@
+# 0.1.3
+
+Changes:
+
+* Revert the name to `column` plugin ...
+
 # 0.1.2
 
 Changes:
