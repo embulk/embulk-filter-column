@@ -1,17 +1,19 @@
-# SelectColumn filter plugin for Embulk
+# Column filter plugin for Embulk
 
-A filter plugin for Embulk to select columns
+A filter plugin for Embulk to filter out columns
 
 ## Configuration
 
-- **columns**: column names (array, required)
+- **columns**: column names (array of hash, required)
 
 ## Example
 
 ```yaml
 filters:
-  - type: select_column
-    columns: [id, name]
+  - type: column
+    columns:
+      - {name: id}
+      - {name: name}
 ```
 
 reduces columns to only `id` and `name` columns.

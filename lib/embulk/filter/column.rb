@@ -1,3 +1,3 @@
 Embulk::JavaPlugin.register_filter(
-  "select_column", "org.embulk.filter.SelectColumnFilterPlugin",
+  "column", "org.embulk.filter.ColumnFilterPlugin",
   File.expand_path('../../../../classpath', __FILE__))
