@@ -1,3 +1,9 @@
+# 0.1.4
+
+Enhancements:
+
+* Add default option
+
 # 0.1.3
 
 Changes:

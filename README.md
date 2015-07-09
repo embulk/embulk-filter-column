@@ -4,7 +4,9 @@ A filter plugin for Embulk to filter out columns
 
 ## Configuration
 
-- **columns**: column names (array of hash, required)
+- **columns**: columns (array of hash, required)
+  - **name**: name of column
+  - **default**: default value used if input is null
 
 ## Example
 
@@ -13,7 +15,7 @@ filters:
   - type: column
     columns:
       - {name: id}
-      - {name: name}
+      - {name: name, default: 'foo'}
 ```
 
 reduces columns to only `id` and `name` columns.
