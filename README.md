@@ -27,6 +27,10 @@ filters:
 
 reduces columns to only `time`, `id`, and `name` columns.
 
+## ToDo
+
+* Write test
+
 ## Development
 
 Run example:
