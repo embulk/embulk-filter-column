@@ -1,5 +1,7 @@
 # Column filter plugin for Embulk
 
+[![Build Status](https://secure.travis-ci.org/sonots/embulk-filter-column.png?branch=master)](http://travis-ci.org/sonots/embulk-filter-column)
+
 A filter plugin for Embulk to filter out columns
 
 ## Configuration
