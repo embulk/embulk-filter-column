@@ -9,8 +9,8 @@ A filter plugin for Embulk to filter out columns
 - **columns**: columns (array of hash, required)
   - **name**: name of column
   - **default**: default value used if input is null
-  - **format**: special option for timestamp column, specify the format of timestamp default (string, default is `%Y-%m-%d %H:%M:%S.%N %z`)
-  - **timezone**: special option for timestamp column, specify the timezone of timestamp default (string, default is `UTC`)
+  - **format**: special option for timestamp column, specify the format of the default timestamp (string, default is `%Y-%m-%d %H:%M:%S.%N %z`)
+  - **timezone**: special option for timestamp column, specify the timezone of the default timestamp (string, default is `UTC`)
 
 NOTE: column type is automatically retrieved from input data (inputSchema)
 
