@@ -13,4 +13,12 @@ public interface ColumnConfig extends Task
     @Config("default")
     @ConfigDefault("null")
     public Optional<Object> getDefault();
+
+    @Config("format")
+    @ConfigDefault("\"%Y-%m-%d %H:%M:%S.%N %z\"")
+    public Optional<String> getFormat();
+
+    @Config("timezone")
+    @ConfigDefault("\"UTC\"")
+    public Optional<String> getTimezone();
 }

@@ -1,5 +1,10 @@
 package org.embulk.filter;
 
+import java.util.List;
+import java.util.HashMap;
+import com.google.common.collect.ImmutableList;
+import org.slf4j.Logger;
+
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigDiff;
@@ -7,11 +12,12 @@ import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
 import org.embulk.config.TaskSource;
 
-import java.util.List;
-import java.util.HashMap;
 import org.embulk.spi.type.Type;
+import org.embulk.spi.type.BooleanType;
+import org.embulk.spi.type.LongType;
+import org.embulk.spi.type.DoubleType;
+import org.embulk.spi.type.StringType;
 import org.embulk.spi.type.TimestampType;
-import com.google.common.collect.ImmutableList;
 
 import org.embulk.spi.FilterPlugin;
 import org.embulk.spi.Exec;
@@ -25,9 +31,16 @@ import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
 import org.embulk.filter.column.ColumnConfig; // note: different with spi.ColumnConfig
 
+import org.joda.time.DateTimeZone;
+import org.embulk.spi.time.Timestamp;
+import org.embulk.spi.time.TimestampParser;
+import org.embulk.spi.time.TimestampParseException;
+import com.google.common.base.Throwables;
+
 public class ColumnFilterPlugin implements FilterPlugin
 {
-    public interface PluginTask extends Task
+    public interface PluginTask
+            extends Task, TimestampParser.Task
     {
         @Config("columns")
         public List<ColumnConfig> getColumns();
@@ -58,12 +71,20 @@ public class ColumnFilterPlugin implements FilterPlugin
         control.run(task.dump(), outputSchema);
     }
 
+    private final Logger log;
+
+    public ColumnFilterPlugin()
+    {
+        log = Exec.getLogger(ColumnFilterPlugin.class);
+    }
+
     @Override
     public PageOutput open(TaskSource taskSource, Schema inputSchema,
             Schema outputSchema, PageOutput output)
     {
         PluginTask task = taskSource.loadTask(PluginTask.class);
 
+        // Map outputColumn => inputColumn
         HashMap<Column, Column> outputInputColumnMap = new HashMap<Column, Column>();
         for (Column outputColumn: outputSchema.getColumns()) {
             for (Column inputColumn: inputSchema.getColumns()) {
@@ -74,12 +95,52 @@ public class ColumnFilterPlugin implements FilterPlugin
             }
         }
 
-        HashMap<Column, ColumnConfig> outputColumnConfigMap = new HashMap<Column, ColumnConfig>();
+        // Map outputColumn => default value if present
+        HashMap<Column, Object> outputDefaultMap = new HashMap<Column, Object>();
         for (Column outputColumn: outputSchema.getColumns()) {
+            Type columnType = outputColumn.getType();
+
             for (ColumnConfig columnConfig : task.getColumns()) {
                 if (columnConfig.getName().equals(outputColumn.getName())) {
-                    outputColumnConfigMap.put(outputColumn, columnConfig);
-                    break;
+
+                    if (columnType instanceof BooleanType) {
+                        if (columnConfig.getDefault().isPresent()) {
+                            Boolean default_value = (Boolean)columnConfig.getDefault().get();
+                            outputDefaultMap.put(outputColumn, default_value);
+                        }
+                    }
+                    else if (columnType instanceof LongType) {
+                        if (columnConfig.getDefault().isPresent()) {
+                            Long default_value = new Long(columnConfig.getDefault().get().toString());
+                            outputDefaultMap.put(outputColumn, default_value);
+                        }
+                    }
+                    else if (columnType instanceof DoubleType) {
+                        if (columnConfig.getDefault().isPresent()) {
+                            Double default_value = new Double(columnConfig.getDefault().get().toString());
+                            outputDefaultMap.put(outputColumn, default_value);
+                        }
+                    }
+                    else if (columnType instanceof StringType) {
+                        if (columnConfig.getDefault().isPresent()) {
+                            String default_value = (String)columnConfig.getDefault().get();
+                            outputDefaultMap.put(outputColumn, default_value);
+                        }
+                    }
+                    else if (columnType instanceof TimestampType) {
+                        if (columnConfig.getDefault().isPresent()) {
+                            String time            = (String)columnConfig.getDefault().get();
+                            String format          = (String)columnConfig.getFormat().get();
+                            DateTimeZone timezone  = DateTimeZone.forID((String)columnConfig.getTimezone().get());
+                            TimestampParser parser = new TimestampParser(task.getJRuby(), format, timezone);
+                            try {
+                                Timestamp default_value = parser.parse(time);
+                                outputDefaultMap.put(outputColumn, default_value);
+                            } catch(TimestampParseException ex) {
+                                throw Throwables.propagate(ex);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -120,11 +181,9 @@ public class ColumnFilterPlugin implements FilterPlugin
                 public void booleanColumn(Column outputColumn) {
                     Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
-                        ColumnConfig columnConfig = outputColumnConfigMap.get(outputColumn);
-                        // ToDo: speed up
-                        if (columnConfig.getDefault().isPresent()) {
-                            boolean default_value = ((Boolean)columnConfig.getDefault().get()).booleanValue();
-                            pageBuilder.setBoolean(outputColumn, default_value);
+                        Boolean default_value = (Boolean)outputDefaultMap.get(outputColumn);
+                        if (default_value != null) {
+                            pageBuilder.setBoolean(outputColumn, default_value.booleanValue());
                         } else {
                             pageBuilder.setNull(outputColumn);
                         }
@@ -137,11 +196,9 @@ public class ColumnFilterPlugin implements FilterPlugin
                 public void longColumn(Column outputColumn) {
                     Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
-                        ColumnConfig columnConfig = outputColumnConfigMap.get(outputColumn);
-                        // ToDo: speed up
-                        if (columnConfig.getDefault().isPresent()) {
-                            long default_value = ((Integer)columnConfig.getDefault().get()).longValue();
-                            pageBuilder.setLong(outputColumn, default_value);
+                        Long default_value = (Long)outputDefaultMap.get(outputColumn);
+                        if (default_value != null) {
+                            pageBuilder.setLong(outputColumn, default_value.longValue());
                         } else {
                             pageBuilder.setNull(outputColumn);
                         }
@@ -154,10 +211,9 @@ public class ColumnFilterPlugin implements FilterPlugin
                 public void doubleColumn(Column outputColumn) {
                     Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
-                        ColumnConfig columnConfig = outputColumnConfigMap.get(outputColumn);
-                        if (columnConfig.getDefault().isPresent()) {
-                            double default_value = ((Double)columnConfig.getDefault().get()).doubleValue();
-                            pageBuilder.setDouble(outputColumn, default_value);
+                        Double default_value = (Double)outputDefaultMap.get(outputColumn);
+                        if (default_value != null) {
+                            pageBuilder.setDouble(outputColumn, default_value.doubleValue());
                         } else {
                             pageBuilder.setNull(outputColumn);
                         }
@@ -170,9 +226,8 @@ public class ColumnFilterPlugin implements FilterPlugin
                 public void stringColumn(Column outputColumn) {
                     Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
-                        ColumnConfig columnConfig = outputColumnConfigMap.get(outputColumn);
-                        if (columnConfig.getDefault().isPresent()) {
-                            String default_value = (String)columnConfig.getDefault().get();
+                        String default_value = (String)outputDefaultMap.get(outputColumn);
+                        if (default_value != null) {
                             pageBuilder.setString(outputColumn, default_value);
                         } else {
                             pageBuilder.setNull(outputColumn);
@@ -186,8 +241,12 @@ public class ColumnFilterPlugin implements FilterPlugin
                 public void timestampColumn(Column outputColumn) {
                     Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (pageReader.isNull(inputColumn)) {
-                        // ToDo: default for timestamp
-                        pageBuilder.setNull(outputColumn);
+                        Timestamp default_value = (Timestamp)outputDefaultMap.get(outputColumn);
+                        if (default_value != null) {
+                            pageBuilder.setTimestamp(outputColumn, default_value);
+                        } else {
+                            pageBuilder.setNull(outputColumn);
+                        }
                     } else {
                         pageBuilder.setTimestamp(outputColumn, pageReader.getTimestamp(inputColumn));
                     }

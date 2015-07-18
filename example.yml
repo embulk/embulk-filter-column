@@ -16,12 +16,14 @@ in:
     skip_header_lines: 1
     comment_line_marker: '#'
     columns:
+      - {name: time,  type: timestamp, format: "%Y-%m-%d"}
       - {name: id, type: long}
       - {name: name, type: string}
       - {name: score, type: double}
 filters:
   - type: column
     columns:
+      - {name: time, default: "2015-07-13", format: "%Y-%m-%d"}
       - {name: name, default: "foo"}
       - {name: foo,  default: 1}
       - {name: id}
