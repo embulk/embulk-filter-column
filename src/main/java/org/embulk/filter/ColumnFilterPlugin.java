@@ -39,8 +39,13 @@ import com.google.common.base.Throwables;
 
 public class ColumnFilterPlugin implements FilterPlugin
 {
-    public interface PluginTask
-            extends Task, TimestampParser.Task
+    private static final Logger logger = Exec.getLogger(ColumnFilterPlugin.class);
+
+    public ColumnFilterPlugin()
+    {
+    }
+
+    public interface PluginTask extends Task, TimestampParser.Task
     {
         @Config("columns")
         public List<ColumnConfig> getColumns();
@@ -69,13 +74,6 @@ public class ColumnFilterPlugin implements FilterPlugin
         Schema outputSchema = new Schema(builder.build());
 
         control.run(task.dump(), outputSchema);
-    }
-
-    private final Logger log;
-
-    public ColumnFilterPlugin()
-    {
-        log = Exec.getLogger(ColumnFilterPlugin.class);
     }
 
     @Override
