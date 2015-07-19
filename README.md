@@ -43,7 +43,7 @@ $ embulk run -I lib example.yml
 Run test:
 
 ```
-$ ./gradew test
+$ ./gradlew test
 ```
 
 Release gem:
