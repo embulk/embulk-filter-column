@@ -52,8 +52,8 @@ public class ColumnFilterPlugin implements FilterPlugin
     }
 
     @Override
-    public void transaction(ConfigSource config, Schema inputSchema,
-            FilterPlugin.Control control)
+    public void transaction(final ConfigSource config, final Schema inputSchema,
+            final FilterPlugin.Control control)
     {
         PluginTask task = config.loadConfig(PluginTask.class);
 
@@ -77,13 +77,13 @@ public class ColumnFilterPlugin implements FilterPlugin
     }
 
     @Override
-    public PageOutput open(TaskSource taskSource, Schema inputSchema,
-            Schema outputSchema, PageOutput output)
+    public PageOutput open(final TaskSource taskSource, final Schema inputSchema,
+            final Schema outputSchema, final PageOutput output)
     {
         PluginTask task = taskSource.loadTask(PluginTask.class);
 
         // Map outputColumn => inputColumn
-        HashMap<Column, Column> outputInputColumnMap = new HashMap<Column, Column>();
+        final HashMap<Column, Column> outputInputColumnMap = new HashMap<Column, Column>();
         for (Column outputColumn: outputSchema.getColumns()) {
             for (Column inputColumn: inputSchema.getColumns()) {
                 if (inputColumn.getName().equals(outputColumn.getName())) {
@@ -94,7 +94,7 @@ public class ColumnFilterPlugin implements FilterPlugin
         }
 
         // Map outputColumn => default value if present
-        HashMap<Column, Object> outputDefaultMap = new HashMap<Column, Object>();
+        final HashMap<Column, Object> outputDefaultMap = new HashMap<Column, Object>();
         for (Column outputColumn: outputSchema.getColumns()) {
             Type columnType = outputColumn.getType();
 
