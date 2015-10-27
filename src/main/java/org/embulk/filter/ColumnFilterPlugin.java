@@ -40,7 +40,6 @@ import com.google.common.base.Throwables;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import com.google.common.base.Optional;
-import org.jruby.embed.ScriptingContainer;
 import org.embulk.spi.SchemaConfigException;
 
 public class ColumnFilterPlugin implements FilterPlugin
@@ -66,12 +65,12 @@ public class ColumnFilterPlugin implements FilterPlugin
         public Optional<Object> getDefault();
 
         @Config("format")
-        @ConfigDefault("\"%Y-%m-%d %H:%M:%S.%N %z\"")
+        @ConfigDefault("null")
         public Optional<String> getFormat();
 
         @Config("timezone")
-        @ConfigDefault("\"UTC\"")
-        public Optional<String> getTimezone();
+        @ConfigDefault("null")
+        public Optional<DateTimeZone> getTimeZone();
     }
 
     public interface PluginTask extends Task, TimestampParser.Task
@@ -87,6 +86,8 @@ public class ColumnFilterPlugin implements FilterPlugin
         @Config("drop_columns")
         @ConfigDefault("[]")
         public List<ColumnConfig> getDropColumns();
+
+        // See TimestampParser for default_timestamp_format, and default_timezone
     }
 
     @Override
@@ -183,7 +184,7 @@ public class ColumnFilterPlugin implements FilterPlugin
         return null;
     }
 
-    private Object getDefault(String name, Type type, List<ColumnConfig> columnConfigs, ScriptingContainer jruby) {
+    private Object getDefault(String name, Type type, List<ColumnConfig> columnConfigs, PluginTask task) {
         for (ColumnConfig columnConfig : columnConfigs) {
             if (columnConfig.getName().equals(name)) {
                 if (type instanceof BooleanType) {
@@ -208,10 +209,20 @@ public class ColumnFilterPlugin implements FilterPlugin
                 }
                 else if (type instanceof TimestampType) {
                     if (columnConfig.getDefault().isPresent()) {
-                        String time            = (String)columnConfig.getDefault().get();
-                        String format          = (String)columnConfig.getFormat().get();
-                        DateTimeZone timezone  = DateTimeZone.forID((String)columnConfig.getTimezone().get());
-                        TimestampParser parser = new TimestampParser(jruby, format, timezone);
+                        String time   = (String)columnConfig.getDefault().get();
+                        String format = null;
+                        if (columnConfig.getFormat().isPresent()) {
+                            format = columnConfig.getFormat().get();
+                        } else {
+                            format = task.getDefaultTimestampFormat();
+                        }
+                        DateTimeZone timezone = null;
+                        if (columnConfig.getTimeZone().isPresent()) {
+                            timezone = columnConfig.getTimeZone().get();
+                        } else {
+                            timezone = task.getDefaultTimeZone();
+                        }
+                        TimestampParser parser = new TimestampParser(task.getJRuby(), format, timezone);
                         try {
                             Timestamp default_value = parser.parse(time);
                             return default_value;
@@ -245,9 +256,9 @@ public class ColumnFilterPlugin implements FilterPlugin
             String name = outputColumn.getName();
             Type   type = outputColumn.getType();
 
-            Object default_value = getDefault(name, type, task.getColumns(), task.getJRuby());
+            Object default_value = getDefault(name, type, task.getColumns(), task);
             if (default_value == null) {
-                default_value = getDefault(name, type, task.getAddColumns(), task.getJRuby());
+                default_value = getDefault(name, type, task.getAddColumns(), task);
             }
             if (default_value != null) {
                 outputDefaultMap.put(outputColumn, default_value);
