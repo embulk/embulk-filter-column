@@ -20,8 +20,8 @@ A filter plugin for Embulk to filter out columns
   - **timezone**: special option for timestamp column, specify the timezone of the default timestamp (string, default is `default_timezone`)
 - **drop_columns**: columns to drop (array of hash)
   - **name**: name of column (required)
-- **default_timezone**: default timezone for timestamp columns (string, default is `UTC`)
 - **default_timestamp_format**: default timestamp format for timestamp columns (string, default is `%Y-%m-%d %H:%M:%S.%N %z`)
+- **default_timezone**: default timezone for timestamp columns (string, default is `UTC`)
 
 ## Example (columns)
 

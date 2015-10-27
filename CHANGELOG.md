@@ -1,4 +1,11 @@
-# 0.2.0
+# 0.3.0 (2015-10-27)
+
+Enhancements:
+
+* Add `default_timestamp_format` option
+* Add `default_timezone` option
+
+# 0.2.0 (2015-10-27)
 
 Enhancements:
 
