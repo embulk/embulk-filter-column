@@ -21,8 +21,6 @@ A filter plugin for Embulk to filter out columns
 - **drop_columns**: columns to drop (array of hash)
   - **name**: name of column (required)
 
-NOTE: column type is automatically retrieved from input data (inputSchema)
-
 ## Example (columns)
 
 Say input.csv is as follows:
@@ -51,6 +49,8 @@ reduces columns to only `time`, `id`, and `key` columns as:
 2015-07-13,2,C40P5H1WcBx-aWFDJCI8th6QPEI2DOUgupt_gB8UutE
 ```
 
+Note that column types are automatically retrieved from input data (inputSchema).
+
 ## Example (add_columns)
 
 Say input.csv is as follows:
@@ -66,7 +66,7 @@ time,id,key,score
 filters:
   - type: column
     add_columns:
-      - {key: d, default: "2015-07-13", format: "%Y-%m-%d"}
+      - {key: d, type: timestamp, default: "2015-07-13", format: "%Y-%m-%d"}
 ```
 
 add `d` column as:
@@ -96,7 +96,7 @@ filters:
       - {key: id}
 ```
 
-add `time` and `id` columns as:
+drop `time` and `id` columns as:
 
 ```
 Vqjht6YEUBsMPXmoW1iOGFROZF27pBzz0TUkOKeDXEY,1370
