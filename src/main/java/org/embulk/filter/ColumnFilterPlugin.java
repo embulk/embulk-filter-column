@@ -29,7 +29,6 @@ import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfig;
 import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
-import org.embulk.filter.column.ColumnConfig; // note: different with spi.ColumnConfig
 
 import org.joda.time.DateTimeZone;
 import org.embulk.spi.time.Timestamp;
@@ -37,12 +36,34 @@ import org.embulk.spi.time.TimestampParser;
 import org.embulk.spi.time.TimestampParseException;
 import com.google.common.base.Throwables;
 
+import org.embulk.config.Config;
+import org.embulk.config.ConfigDefault;
+import com.google.common.base.Optional;
+
 public class ColumnFilterPlugin implements FilterPlugin
 {
     private static final Logger logger = Exec.getLogger(ColumnFilterPlugin.class);
 
     public ColumnFilterPlugin()
     {
+    }
+
+    private interface ColumnConfig extends Task
+    {
+        @Config("name")
+        public String getName();
+
+        @Config("default")
+        @ConfigDefault("null")
+        public Optional<Object> getDefault();
+
+        @Config("format")
+        @ConfigDefault("\"%Y-%m-%d %H:%M:%S.%N %z\"")
+        public Optional<String> getFormat();
+
+        @Config("timezone")
+        @ConfigDefault("\"UTC\"")
+        public Optional<String> getTimezone();
     }
 
     public interface PluginTask extends Task, TimestampParser.Task
