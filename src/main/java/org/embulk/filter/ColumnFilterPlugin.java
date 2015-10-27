@@ -146,6 +146,7 @@ public class ColumnFilterPlugin implements FilterPlugin
         return new PageOutput() {
             private PageReader pageReader = new PageReader(inputSchema);
             private PageBuilder pageBuilder = new PageBuilder(Exec.getBufferAllocator(), outputSchema, output);
+            private ColumnVisitorImpl visitor = new ColumnVisitorImpl(pageBuilder);
 
             @Override
             public void finish() {
@@ -161,7 +162,6 @@ public class ColumnFilterPlugin implements FilterPlugin
             public void add(Page page) {
                 pageReader.setPage(page);
 
-                ColumnVisitorImpl visitor = new ColumnVisitorImpl(pageBuilder);
                 while (pageReader.nextRecord()) {
                     outputSchema.visitColumns(visitor);
                     pageBuilder.addRecord();
