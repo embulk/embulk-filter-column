@@ -15,8 +15,11 @@ in:
       - {name: score, type: double}
 filters:
   - type: column
+    default_timezone: "Asia/Tokyo"
+    default_timestamp_format: "%Y-%m-%d"
     add_columns:
       - {name: foo, type: long, default: 1 }
-      - {name: d, type: timestamp, default: "2015-07-13", format: "%Y-%m-%d" }
+      - {name: d, type: timestamp, default: "2015-07-13" }
+      - {name: t, type: timestamp, default: "2015-07-13 00:00:00", timezone: "UTC", format: "%Y-%m-%d %H:%M:%S" }
 out:
   type: stdout
