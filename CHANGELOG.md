@@ -1,3 +1,10 @@
+# 0.2.0
+
+Enhancements:
+
+* Add `add_columns` option
+* Add `drop_columns` option
+
 # 0.1.6
 
 Enhancements:
