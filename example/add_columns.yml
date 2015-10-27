@@ -1,13 +1,6 @@
-# in:
-#   type: random
-#   rows: 100
-#   schema:
-#     id: primary_key
-#     name: string
-#     score: integer
 in:
   type: file
-  path_prefix: example.csv
+  path_prefix: example/example.csv
   parser:
     type: csv
     charset: UTF-8
@@ -22,10 +15,8 @@ in:
       - {name: score, type: double}
 filters:
   - type: column
-    columns:
-      - {name: time, default: "2015-07-13", format: "%Y-%m-%d"}
-      - {name: name, default: "foo"}
-      - {name: foo,  default: 1}
-      - {name: id}
+    add_columns:
+      - {name: foo, type: long, default: 1 }
+      - {name: d, type: timestamp, default: "2015-07-13", format: "%Y-%m-%d" }
 out:
   type: stdout
