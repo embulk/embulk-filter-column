@@ -1,3 +1,9 @@
+# 0.3.1 (2015-11-09)
+
+Enhancements:
+
+* Add copy column feature (thanks to hidepin)
+
 # 0.3.0 (2015-10-27)
 
 Enhancements:
