@@ -71,6 +71,10 @@ public class ColumnFilterPlugin implements FilterPlugin
         @Config("timezone")
         @ConfigDefault("null")
         public Optional<DateTimeZone> getTimeZone();
+
+        @Config("src")
+        @ConfigDefault("null")
+        public Optional<String> getSrc();
     }
 
     public interface PluginTask extends Task, TimestampParser.Task
@@ -131,9 +135,11 @@ public class ColumnFilterPlugin implements FilterPlugin
                 String name                   = column.getName();
                 Optional<Type>   type         = column.getType();
                 Optional<Object> defaultValue = column.getDefault();
+                Optional<String> src          = column.getSrc();
 
-                Column inputColumn = getColumn(name, inputSchema);
-                if (inputColumn != null) { // filter column
+                String srcName = src.isPresent() ? src.get() : name;
+                Column inputColumn = getColumn(srcName, inputSchema);
+                if (inputColumn != null) { // filter or copy column
                     Column outputColumn = new Column(i++, name, inputColumn.getType());
                     builder.add(outputColumn);
                 }
@@ -142,7 +148,7 @@ public class ColumnFilterPlugin implements FilterPlugin
                     builder.add(outputColumn);
                 }
                 else {
-                    throw new SchemaConfigException(String.format("columns: Column '%s' is not found in inputSchema. Column '%s' does not have \"type\" and \"default\"", name, name));
+                    throw new SchemaConfigException(String.format("columns: Column '%s' is not found in inputSchema. Column '%s' does not have \"type\" and \"default\"", srcName, name));
                 }
             }
         } else {
@@ -158,13 +164,20 @@ public class ColumnFilterPlugin implements FilterPlugin
                 String name                   = column.getName();
                 Optional<Type> type           = column.getType();
                 Optional<Object> defaultValue = column.getDefault();
+                Optional<String> src          = column.getSrc();
 
-                if (type.isPresent() && defaultValue.isPresent()) { // add column
+                String srcName = src.isPresent() ? src.get() : "";
+                Column inputColumn = getColumn(srcName, inputSchema);
+                if (inputColumn != null) { // copy column
+                    Column outputColumn = new Column(i++, name, inputColumn.getType());
+                    builder.add(outputColumn);
+                }
+                else if (type.isPresent() && defaultValue.isPresent()) { // add column
                     Column outputColumn = new Column(i++, name, type.get());
                     builder.add(outputColumn);
                 }
                 else {
-                    throw new SchemaConfigException(String.format("add_columns: Column '%s' does not have \"type\" and \"default\"", name));
+                    throw new SchemaConfigException(String.format("add_columns: Column '%s' is not found in inputSchema, Column '%s' does not have \"type\" and \"default\"", srcName, name));
                 }
             }
         }
@@ -179,6 +192,16 @@ public class ColumnFilterPlugin implements FilterPlugin
         for (Column column: schema.getColumns()) {
             if (column.getName().equals(name)) {
                 return column;
+            }
+        }
+        return null;
+    }
+
+    private String getSrc(String name, List<ColumnConfig> columnConfigs) {
+        for (ColumnConfig columnConfig : columnConfigs) {
+            if (columnConfig.getName().equals(name) &&
+                columnConfig.getSrc().isPresent()) {
+                return (String)columnConfig.getSrc().get();
             }
         }
         return null;
@@ -246,7 +269,15 @@ public class ColumnFilterPlugin implements FilterPlugin
         // Map outputColumn => inputColumn
         final HashMap<Column, Column> outputInputColumnMap = new HashMap<Column, Column>();
         for (Column outputColumn: outputSchema.getColumns()) {
-            Column inputColumn = getColumn(outputColumn.getName(), inputSchema);
+            String name    = outputColumn.getName();
+            String srcName = getSrc(name, task.getColumns());
+            if (srcName == null) {
+                srcName = getSrc(name, task.getAddColumns());
+            }
+            if (srcName == null) {
+                srcName = name;
+            }
+            Column inputColumn = getColumn(srcName, inputSchema);
             outputInputColumnMap.put(outputColumn, inputColumn); // NOTE: inputColumn would be null
         }
 
