@@ -27,5 +27,6 @@ filters:
       - {name: name, default: "foo"}
       - {name: foo,  default: 1, type: long}
       - {name: id}
+      - {name: copy_score, src: score}
 out:
   type: stdout

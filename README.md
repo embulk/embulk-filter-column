@@ -8,18 +8,18 @@ A filter plugin for Embulk to filter out columns
 
 - **columns**: columns to retain (array of hash)
   - **name**: name of column (required)
-  - **type**: type of column (required to add)
-  - **default**: default value used if input is null (required to add)
+  - **src**: src column name to be copied (optional, default is `name`)
+  - **default**: default value used if input is null (optional)
+  - **type**: type of the default value (required for `default`)
   - **format**: special option for timestamp column, specify the format of the default timestamp (string, default is `default_timestamp_format`)
   - **timezone**: special option for timestamp column, specify the timezone of the default timestamp (string, default is `default_timezone`)
-  - **src**: src column name to copy values (optional, default:name)
 - **add_columns**: columns to add (array of hash)
   - **name**: name of column (required)
-  - **type**: type of column (required)
-  - **default**: value of column (required)
+  - **src**: src column name to be copied (either of `src` or `default` is required)
+  - **default**: value of column (either of `src` or `default` is required)
+  - **type**: type of the default value (required for `default`)
   - **format**: special option for timestamp column, specify the format of the default timestamp (string, default is `default_timestamp_format`)
   - **timezone**: special option for timestamp column, specify the timezone of the default timestamp (string, default is `default_timezone`)
-  - **src**: src column name to copy values (optional)
 - **drop_columns**: columns to drop (array of hash)
   - **name**: name of column (required)
 - **default_timestamp_format**: default timestamp format for timestamp columns (string, default is `%Y-%m-%d %H:%M:%S.%N %z`)
@@ -40,9 +40,9 @@ time,id,key,score
 filters:
   - type: column
     columns:
-      - {key: time, default: "2015-07-13", format: "%Y-%m-%d"}
-      - {key: id}
-      - {key: key, default: "foo"}
+      - {name: time, default: "2015-07-13", format: "%Y-%m-%d"}
+      - {name: id}
+      - {name: key, default: "foo"}
 ```
 
 reduces columns to only `time`, `id`, and `key` columns as:
@@ -70,15 +70,16 @@ time,id,key,score
 filters:
   - type: column
     add_columns:
-      - {key: d, type: timestamp, default: "2015-07-13", format: "%Y-%m-%d"}
+      - {name: d, type: timestamp, default: "2015-07-13", format: "%Y-%m-%d"}
+      - {name: copy_id, src: id}
 ```
 
-add `d` column as:
+add `d` column, and `copy_id` column which is a copy of `id` column as:
 
 ```
-2015-07-13,0,Vqjht6YEUBsMPXmoW1iOGFROZF27pBzz0TUkOKeDXEY,1370,2015-07-13
-2015-07-13,1,VmjbjAA0tOoSEPv_vKAGMtD_0aXZji0abGe7_VXHmUQ,3962,2015-07-13
-2015-07-13,2,C40P5H1WcBx-aWFDJCI8th6QPEI2DOUgupt_gB8UutE,7323,2015-07,13
+2015-07-13,0,Vqjht6YEUBsMPXmoW1iOGFROZF27pBzz0TUkOKeDXEY,1370,2015-07-13,0
+2015-07-13,1,VmjbjAA0tOoSEPv_vKAGMtD_0aXZji0abGe7_VXHmUQ,3962,2015-07-13,1
+2015-07-13,2,C40P5H1WcBx-aWFDJCI8th6QPEI2DOUgupt_gB8UutE,7323,2015-07,13,2
 ```
 
 ## Example (drop_columns)
@@ -96,8 +97,8 @@ time,id,key,score
 filters:
   - type: column
     drop_columns:
-      - {key: time}
-      - {key: id}
+      - {name: time}
+      - {name: id}
 ```
 
 drop `time` and `id` columns as:
