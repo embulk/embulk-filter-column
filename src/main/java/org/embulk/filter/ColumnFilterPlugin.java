@@ -148,7 +148,7 @@ public class ColumnFilterPlugin implements FilterPlugin
                     builder.add(outputColumn);
                 }
                 else {
-                    throw new SchemaConfigException(String.format("columns: Column '%s' is not found in inputSchema. Column '%s' does not have \"type\" and \"default\"", srcName, name));
+                    throw new SchemaConfigException(String.format("columns: Column src '%s' is not found in inputSchema. Column '%s' does not have \"type\" and \"default\"", srcName, name));
                 }
             }
         } else {
@@ -166,8 +166,12 @@ public class ColumnFilterPlugin implements FilterPlugin
                 Optional<Object> defaultValue = column.getDefault();
                 Optional<String> src          = column.getSrc();
 
-                String srcName = src.isPresent() ? src.get() : "";
-                Column inputColumn = getColumn(srcName, inputSchema);
+                String srcName = null;
+                Column inputColumn = null;
+                if (src.isPresent()) {
+                    srcName = src.get();
+                    inputColumn = getColumn(srcName, inputSchema);
+                }
                 if (inputColumn != null) { // copy column
                     Column outputColumn = new Column(i++, name, inputColumn.getType());
                     builder.add(outputColumn);
@@ -177,7 +181,7 @@ public class ColumnFilterPlugin implements FilterPlugin
                     builder.add(outputColumn);
                 }
                 else {
-                    throw new SchemaConfigException(String.format("add_columns: Column '%s' is not found in inputSchema, Column '%s' does not have \"type\" and \"default\"", srcName, name));
+                    throw new SchemaConfigException(String.format("add_columns: Column src '%s' is not found in inputSchema, Column '%s' does not have \"type\" and \"default\"", srcName, name));
                 }
             }
         }
