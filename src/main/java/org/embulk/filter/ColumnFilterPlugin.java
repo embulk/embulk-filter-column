@@ -1,46 +1,41 @@
 package org.embulk.filter;
 
-import java.util.List;
-import java.util.HashMap;
+import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import org.slf4j.Logger;
 
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
-import org.embulk.config.ConfigDiff;
-import org.embulk.config.ConfigSource;
 import org.embulk.config.ConfigException;
+import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
 import org.embulk.config.TaskSource;
 
-import org.embulk.spi.type.Type;
-import org.embulk.spi.type.BooleanType;
-import org.embulk.spi.type.LongType;
-import org.embulk.spi.type.DoubleType;
-import org.embulk.spi.type.StringType;
-import org.embulk.spi.type.TimestampType;
-
-import org.embulk.spi.FilterPlugin;
+import org.embulk.spi.Column;
+import org.embulk.spi.ColumnVisitor;
 import org.embulk.spi.Exec;
+import org.embulk.spi.FilterPlugin;
 import org.embulk.spi.Page;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.PageOutput;
 import org.embulk.spi.PageReader;
 import org.embulk.spi.Schema;
-import org.embulk.spi.SchemaConfig;
-import org.embulk.spi.Column;
-import org.embulk.spi.ColumnVisitor;
+import org.embulk.spi.SchemaConfigException;
+import org.embulk.spi.time.Timestamp;
+import org.embulk.spi.time.TimestampParseException;
+import org.embulk.spi.time.TimestampParser;
+import org.embulk.spi.type.BooleanType;
+import org.embulk.spi.type.DoubleType;
+import org.embulk.spi.type.LongType;
+import org.embulk.spi.type.StringType;
+import org.embulk.spi.type.TimestampType;
+import org.embulk.spi.type.Type;
 
 import org.joda.time.DateTimeZone;
-import org.embulk.spi.time.Timestamp;
-import org.embulk.spi.time.TimestampParser;
-import org.embulk.spi.time.TimestampParseException;
-import com.google.common.base.Throwables;
+import org.slf4j.Logger;
 
-import org.embulk.config.Config;
-import org.embulk.config.ConfigDefault;
-import com.google.common.base.Optional;
-import org.embulk.spi.SchemaConfigException;
+import java.util.HashMap;
+import java.util.List;
 
 public class ColumnFilterPlugin implements FilterPlugin
 {
@@ -116,7 +111,7 @@ public class ColumnFilterPlugin implements FilterPlugin
         ImmutableList.Builder<Column> builder = ImmutableList.builder();
         int i = 0;
         if (dropColumns.size() > 0) {
-            for (Column inputColumn: inputSchema.getColumns()) {
+            for (Column inputColumn : inputSchema.getColumns()) {
                 String name = inputColumn.getName();
                 boolean matched = false;
                 for (ColumnConfig dropColumn : dropColumns) {
@@ -130,7 +125,8 @@ public class ColumnFilterPlugin implements FilterPlugin
                     builder.add(outputColumn);
                 }
             }
-        } else if (columns.size() > 0) {
+        }
+        else if (columns.size() > 0) {
             for (ColumnConfig column : columns) {
                 String name                   = column.getName();
                 Optional<Type>   type         = column.getType();
@@ -151,8 +147,9 @@ public class ColumnFilterPlugin implements FilterPlugin
                     throw new SchemaConfigException(String.format("columns: Column src '%s' is not found in inputSchema. Column '%s' does not have \"type\" and \"default\"", srcName, name));
                 }
             }
-        } else {
-            for (Column inputColumn: inputSchema.getColumns()) {
+        }
+        else {
+            for (Column inputColumn : inputSchema.getColumns()) {
                 Column outputColumn = new Column(i++, inputColumn.getName(), inputColumn.getType());
                 builder.add(outputColumn);
             }
@@ -191,9 +188,10 @@ public class ColumnFilterPlugin implements FilterPlugin
         control.run(task.dump(), outputSchema);
     }
 
-    private Column getColumn(String name, Schema schema) {
+    private Column getColumn(String name, Schema schema)
+    {
         // hash should be faster, though
-        for (Column column: schema.getColumns()) {
+        for (Column column : schema.getColumns()) {
             if (column.getName().equals(name)) {
                 return column;
             }
@@ -201,22 +199,24 @@ public class ColumnFilterPlugin implements FilterPlugin
         return null;
     }
 
-    private String getSrc(String name, List<ColumnConfig> columnConfigs) {
+    private String getSrc(String name, List<ColumnConfig> columnConfigs)
+    {
         for (ColumnConfig columnConfig : columnConfigs) {
             if (columnConfig.getName().equals(name) &&
                 columnConfig.getSrc().isPresent()) {
-                return (String)columnConfig.getSrc().get();
+                return (String) columnConfig.getSrc().get();
             }
         }
         return null;
     }
 
-    private Object getDefault(String name, Type type, List<ColumnConfig> columnConfigs, PluginTask task) {
+    private Object getDefault(String name, Type type, List<ColumnConfig> columnConfigs, PluginTask task)
+    {
         for (ColumnConfig columnConfig : columnConfigs) {
             if (columnConfig.getName().equals(name)) {
                 if (type instanceof BooleanType) {
                     if (columnConfig.getDefault().isPresent()) {
-                        return (Boolean)columnConfig.getDefault().get();
+                        return (Boolean) columnConfig.getDefault().get();
                     }
                 }
                 else if (type instanceof LongType) {
@@ -231,29 +231,32 @@ public class ColumnFilterPlugin implements FilterPlugin
                 }
                 else if (type instanceof StringType) {
                     if (columnConfig.getDefault().isPresent()) {
-                        return (String)columnConfig.getDefault().get();
+                        return (String) columnConfig.getDefault().get();
                     }
                 }
                 else if (type instanceof TimestampType) {
                     if (columnConfig.getDefault().isPresent()) {
-                        String time   = (String)columnConfig.getDefault().get();
+                        String time   = (String) columnConfig.getDefault().get();
                         String format = null;
                         if (columnConfig.getFormat().isPresent()) {
                             format = columnConfig.getFormat().get();
-                        } else {
+                        }
+                        else {
                             format = task.getDefaultTimestampFormat();
                         }
                         DateTimeZone timezone = null;
                         if (columnConfig.getTimeZone().isPresent()) {
                             timezone = columnConfig.getTimeZone().get();
-                        } else {
+                        }
+                        else {
                             timezone = task.getDefaultTimeZone();
                         }
                         TimestampParser parser = new TimestampParser(task.getJRuby(), format, timezone);
                         try {
-                            Timestamp default_value = parser.parse(time);
-                            return default_value;
-                        } catch(TimestampParseException ex) {
+                            Timestamp defaultValue = parser.parse(time);
+                            return defaultValue;
+                        }
+                        catch (TimestampParseException ex) {
                             throw Throwables.propagate(ex);
                         }
                     }
@@ -272,7 +275,7 @@ public class ColumnFilterPlugin implements FilterPlugin
 
         // Map outputColumn => inputColumn
         final HashMap<Column, Column> outputInputColumnMap = new HashMap<Column, Column>();
-        for (Column outputColumn: outputSchema.getColumns()) {
+        for (Column outputColumn : outputSchema.getColumns()) {
             String name    = outputColumn.getName();
             String srcName = getSrc(name, task.getColumns());
             if (srcName == null) {
@@ -287,16 +290,16 @@ public class ColumnFilterPlugin implements FilterPlugin
 
         // Map outputColumn => default value if present
         final HashMap<Column, Object> outputDefaultMap = new HashMap<Column, Object>();
-        for (Column outputColumn: outputSchema.getColumns()) {
+        for (Column outputColumn : outputSchema.getColumns()) {
             String name = outputColumn.getName();
             Type   type = outputColumn.getType();
 
-            Object default_value = getDefault(name, type, task.getColumns(), task);
-            if (default_value == null) {
-                default_value = getDefault(name, type, task.getAddColumns(), task);
+            Object defaultValue = getDefault(name, type, task.getColumns(), task);
+            if (defaultValue == null) {
+                defaultValue = getDefault(name, type, task.getAddColumns(), task);
             }
-            if (default_value != null) {
-                outputDefaultMap.put(outputColumn, default_value);
+            if (defaultValue != null) {
+                outputDefaultMap.put(outputColumn, defaultValue);
             }
         }
 
@@ -306,17 +309,20 @@ public class ColumnFilterPlugin implements FilterPlugin
             private ColumnVisitorImpl visitor = new ColumnVisitorImpl(pageBuilder);
 
             @Override
-            public void finish() {
+            public void finish()
+            {
                 pageBuilder.finish();
             }
 
             @Override
-            public void close() {
+            public void close()
+            {
                 pageBuilder.close();
             }
 
             @Override
-            public void add(Page page) {
+            public void add(Page page)
+            {
                 pageReader.setPage(page);
 
                 while (pageReader.nextRecord()) {
@@ -325,84 +331,101 @@ public class ColumnFilterPlugin implements FilterPlugin
                 }
             }
 
-            class ColumnVisitorImpl implements ColumnVisitor {
+            class ColumnVisitorImpl implements ColumnVisitor
+            {
                 private final PageBuilder pageBuilder;
 
-                ColumnVisitorImpl(PageBuilder pageBuilder) {
+                ColumnVisitorImpl(PageBuilder pageBuilder)
+                {
                     this.pageBuilder = pageBuilder;
                 }
 
                 @Override
-                public void booleanColumn(Column outputColumn) {
+                public void booleanColumn(Column outputColumn)
+                {
                     Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (inputColumn == null || pageReader.isNull(inputColumn)) {
-                        Boolean default_value = (Boolean)outputDefaultMap.get(outputColumn);
-                        if (default_value != null) {
-                            pageBuilder.setBoolean(outputColumn, default_value.booleanValue());
-                        } else {
+                        Boolean defaultValue = (Boolean) outputDefaultMap.get(outputColumn);
+                        if (defaultValue != null) {
+                            pageBuilder.setBoolean(outputColumn, defaultValue.booleanValue());
+                        }
+                        else {
                             pageBuilder.setNull(outputColumn);
                         }
-                    } else {
+                    }
+                    else {
                         pageBuilder.setBoolean(outputColumn, pageReader.getBoolean(inputColumn));
                     }
                 }
 
                 @Override
-                public void longColumn(Column outputColumn) {
+                public void longColumn(Column outputColumn)
+                {
                     Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (inputColumn == null || pageReader.isNull(inputColumn)) {
-                        Long default_value = (Long)outputDefaultMap.get(outputColumn);
-                        if (default_value != null) {
-                            pageBuilder.setLong(outputColumn, default_value.longValue());
-                        } else {
+                        Long defaultValue = (Long) outputDefaultMap.get(outputColumn);
+                        if (defaultValue != null) {
+                            pageBuilder.setLong(outputColumn, defaultValue.longValue());
+                        }
+                        else {
                             pageBuilder.setNull(outputColumn);
                         }
-                    } else {
+                    }
+                    else {
                         pageBuilder.setLong(outputColumn, pageReader.getLong(inputColumn));
                     }
                 }
 
                 @Override
-                public void doubleColumn(Column outputColumn) {
+                public void doubleColumn(Column outputColumn)
+                {
                     Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (inputColumn == null || pageReader.isNull(inputColumn)) {
-                        Double default_value = (Double)outputDefaultMap.get(outputColumn);
-                        if (default_value != null) {
-                            pageBuilder.setDouble(outputColumn, default_value.doubleValue());
-                        } else {
+                        Double defaultValue = (Double) outputDefaultMap.get(outputColumn);
+                        if (defaultValue != null) {
+                            pageBuilder.setDouble(outputColumn, defaultValue.doubleValue());
+                        }
+                        else {
                             pageBuilder.setNull(outputColumn);
                         }
-                    } else {
+                    }
+                    else {
                         pageBuilder.setDouble(outputColumn, pageReader.getDouble(inputColumn));
                     }
                 }
 
                 @Override
-                public void stringColumn(Column outputColumn) {
+                public void stringColumn(Column outputColumn)
+                {
                     Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (inputColumn == null || pageReader.isNull(inputColumn)) {
-                        String default_value = (String)outputDefaultMap.get(outputColumn);
-                        if (default_value != null) {
-                            pageBuilder.setString(outputColumn, default_value);
-                        } else {
+                        String defaultValue = (String) outputDefaultMap.get(outputColumn);
+                        if (defaultValue != null) {
+                            pageBuilder.setString(outputColumn, defaultValue);
+                        }
+                        else {
                             pageBuilder.setNull(outputColumn);
                         }
-                    } else {
+                    }
+                    else {
                         pageBuilder.setString(outputColumn, pageReader.getString(inputColumn));
                     }
                 }
 
                 @Override
-                public void timestampColumn(Column outputColumn) {
+                public void timestampColumn(Column outputColumn)
+                {
                     Column inputColumn = outputInputColumnMap.get(outputColumn);
                     if (inputColumn == null || pageReader.isNull(inputColumn)) {
-                        Timestamp default_value = (Timestamp)outputDefaultMap.get(outputColumn);
-                        if (default_value != null) {
-                            pageBuilder.setTimestamp(outputColumn, default_value);
-                        } else {
+                        Timestamp defaultValue = (Timestamp) outputDefaultMap.get(outputColumn);
+                        if (defaultValue != null) {
+                            pageBuilder.setTimestamp(outputColumn, defaultValue);
+                        }
+                        else {
                             pageBuilder.setNull(outputColumn);
                         }
-                    } else {
+                    }
+                    else {
                         pageBuilder.setTimestamp(outputColumn, pageReader.getTimestamp(inputColumn));
                     }
                 }
