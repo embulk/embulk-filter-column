@@ -1,3 +1,13 @@
+# 0.4.0 (2016-02-01)
+
+Enhancements:
+
+* Support JSON type (thanks to joker1007)
+
+Changes:
+
+* Requires embulk >= 0.8.1
+
 # 0.3.1 (2015-11-09)
 
 Enhancements:
