@@ -21,6 +21,7 @@ import org.embulk.spi.PageOutput;
 import org.embulk.spi.PageReader;
 import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfigException;
+import org.embulk.spi.json.JsonParser;
 import org.embulk.spi.time.Timestamp;
 import org.embulk.spi.time.TimestampParseException;
 import org.embulk.spi.time.TimestampParser;
@@ -28,10 +29,12 @@ import org.embulk.spi.type.BooleanType;
 import org.embulk.spi.type.DoubleType;
 import org.embulk.spi.type.LongType;
 import org.embulk.spi.type.StringType;
+import org.embulk.spi.type.JsonType;
 import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
 
 import org.joda.time.DateTimeZone;
+import org.msgpack.value.Value;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
@@ -234,6 +237,12 @@ public class ColumnFilterPlugin implements FilterPlugin
                         return (String) columnConfig.getDefault().get();
                     }
                 }
+                else if (type instanceof JsonType) {
+                   if (columnConfig.getDefault().isPresent()) {
+                       JsonParser parser = new JsonParser();
+                       return parser.parse((String) columnConfig.getDefault().get());
+                   }
+                }
                 else if (type instanceof TimestampType) {
                     if (columnConfig.getDefault().isPresent()) {
                         String time   = (String) columnConfig.getDefault().get();
@@ -409,6 +418,24 @@ public class ColumnFilterPlugin implements FilterPlugin
                     }
                     else {
                         pageBuilder.setString(outputColumn, pageReader.getString(inputColumn));
+                    }
+                }
+
+                @Override
+                public void jsonColumn(Column outputColumn)
+                {
+                    Column inputColumn = outputInputColumnMap.get(outputColumn);
+                    if (inputColumn == null || pageReader.isNull(inputColumn)) {
+                        Value defaultValue = (Value) outputDefaultMap.get(outputColumn);
+                        if (defaultValue != null) {
+                            pageBuilder.setJson(outputColumn, defaultValue);
+                        }
+                        else {
+                            pageBuilder.setNull(outputColumn);
+                        }
+                    }
+                    else {
+                        pageBuilder.setJson(outputColumn, pageReader.getJson(inputColumn));
                     }
                 }
 

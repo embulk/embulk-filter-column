@@ -9,3 +9,4 @@ build/
 *.csv
 .tags
 .ruby-version
+*.iml
