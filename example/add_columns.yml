@@ -13,6 +13,7 @@ in:
       - {name: id, type: long}
       - {name: name, type: string}
       - {name: score, type: double}
+      - {name: json, type: json}
 filters:
   - type: column
     default_timezone: "Asia/Tokyo"
