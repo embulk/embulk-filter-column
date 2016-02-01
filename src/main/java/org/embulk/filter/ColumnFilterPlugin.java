@@ -25,7 +25,13 @@ import org.embulk.spi.json.JsonParser;
 import org.embulk.spi.time.Timestamp;
 import org.embulk.spi.time.TimestampParseException;
 import org.embulk.spi.time.TimestampParser;
-import org.embulk.spi.type.*;
+import org.embulk.spi.type.BooleanType;
+import org.embulk.spi.type.DoubleType;
+import org.embulk.spi.type.LongType;
+import org.embulk.spi.type.StringType;
+import org.embulk.spi.type.JsonType;
+import org.embulk.spi.type.TimestampType;
+import org.embulk.spi.type.Type;
 
 import org.joda.time.DateTimeZone;
 import org.msgpack.value.Value;
