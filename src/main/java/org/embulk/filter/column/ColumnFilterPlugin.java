@@ -1,4 +1,4 @@
-package org.embulk.filter;
+package org.embulk.filter.column;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;

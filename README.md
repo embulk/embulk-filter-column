@@ -119,7 +119,7 @@ Run example:
 
 ```
 $ ./gradlew classpath
-$ embulk run -I lib example.yml
+$ embulk run -I lib example/example.yml
 ```
 
 Run test:
