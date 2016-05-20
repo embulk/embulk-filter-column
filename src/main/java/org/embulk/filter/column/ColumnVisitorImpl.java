@@ -99,7 +99,7 @@ public class ColumnVisitorImpl implements ColumnVisitor
         for (ColumnConfig columnConfig : columnConfigs) {
             if (columnConfig.getName().equals(name) &&
                     columnConfig.getSrc().isPresent()) {
-                return (String) columnConfig.getSrc().get();
+                return columnConfig.getSrc().get();
             }
         }
         return null;
@@ -126,7 +126,7 @@ public class ColumnVisitorImpl implements ColumnVisitor
                 }
                 else if (type instanceof StringType) {
                     if (columnConfig.getDefault().isPresent()) {
-                        return (String) columnConfig.getDefault().get();
+                        return columnConfig.getDefault().get();
                     }
                 }
                 else if (type instanceof JsonType) {
@@ -138,14 +138,14 @@ public class ColumnVisitorImpl implements ColumnVisitor
                 else if (type instanceof TimestampType) {
                     if (columnConfig.getDefault().isPresent()) {
                         String time   = (String) columnConfig.getDefault().get();
-                        String format = null;
+                        String format;
                         if (columnConfig.getFormat().isPresent()) {
                             format = columnConfig.getFormat().get();
                         }
                         else {
                             format = task.getDefaultTimestampFormat();
                         }
-                        DateTimeZone timezone = null;
+                        DateTimeZone timezone;
                         if (columnConfig.getTimeZone().isPresent()) {
                             timezone = columnConfig.getTimeZone().get();
                         }
@@ -174,11 +174,11 @@ public class ColumnVisitorImpl implements ColumnVisitor
         Column inputColumn = outputInputColumnMap.get(outputColumn);
         if (inputColumn == null || pageReader.isNull(inputColumn)) {
             Boolean defaultValue = (Boolean) outputDefaultMap.get(outputColumn);
-            if (defaultValue != null) {
-                pageBuilder.setBoolean(outputColumn, defaultValue.booleanValue());
+            if (defaultValue == null) {
+                pageBuilder.setNull(outputColumn);
             }
             else {
-                pageBuilder.setNull(outputColumn);
+                pageBuilder.setBoolean(outputColumn, defaultValue.booleanValue());
             }
         }
         else {
@@ -192,11 +192,11 @@ public class ColumnVisitorImpl implements ColumnVisitor
         Column inputColumn = outputInputColumnMap.get(outputColumn);
         if (inputColumn == null || pageReader.isNull(inputColumn)) {
             Long defaultValue = (Long) outputDefaultMap.get(outputColumn);
-            if (defaultValue != null) {
-                pageBuilder.setLong(outputColumn, defaultValue.longValue());
+            if (defaultValue == null) {
+                pageBuilder.setNull(outputColumn);
             }
             else {
-                pageBuilder.setNull(outputColumn);
+                pageBuilder.setLong(outputColumn, defaultValue.longValue());
             }
         }
         else {
@@ -210,11 +210,11 @@ public class ColumnVisitorImpl implements ColumnVisitor
         Column inputColumn = outputInputColumnMap.get(outputColumn);
         if (inputColumn == null || pageReader.isNull(inputColumn)) {
             Double defaultValue = (Double) outputDefaultMap.get(outputColumn);
-            if (defaultValue != null) {
-                pageBuilder.setDouble(outputColumn, defaultValue.doubleValue());
+            if (defaultValue == null) {
+                pageBuilder.setNull(outputColumn);
             }
             else {
-                pageBuilder.setNull(outputColumn);
+                pageBuilder.setDouble(outputColumn, defaultValue.doubleValue());
             }
         }
         else {
@@ -228,11 +228,11 @@ public class ColumnVisitorImpl implements ColumnVisitor
         Column inputColumn = outputInputColumnMap.get(outputColumn);
         if (inputColumn == null || pageReader.isNull(inputColumn)) {
             String defaultValue = (String) outputDefaultMap.get(outputColumn);
-            if (defaultValue != null) {
-                pageBuilder.setString(outputColumn, defaultValue);
+            if (defaultValue == null) {
+                pageBuilder.setNull(outputColumn);
             }
             else {
-                pageBuilder.setNull(outputColumn);
+                pageBuilder.setString(outputColumn, defaultValue);
             }
         }
         else {
@@ -246,11 +246,11 @@ public class ColumnVisitorImpl implements ColumnVisitor
         Column inputColumn = outputInputColumnMap.get(outputColumn);
         if (inputColumn == null || pageReader.isNull(inputColumn)) {
             Value defaultValue = (Value) outputDefaultMap.get(outputColumn);
-            if (defaultValue != null) {
-                pageBuilder.setJson(outputColumn, defaultValue);
+            if (defaultValue == null) {
+                pageBuilder.setNull(outputColumn);
             }
             else {
-                pageBuilder.setNull(outputColumn);
+                pageBuilder.setJson(outputColumn, defaultValue);
             }
         }
         else {
@@ -264,11 +264,11 @@ public class ColumnVisitorImpl implements ColumnVisitor
         Column inputColumn = outputInputColumnMap.get(outputColumn);
         if (inputColumn == null || pageReader.isNull(inputColumn)) {
             Timestamp defaultValue = (Timestamp) outputDefaultMap.get(outputColumn);
-            if (defaultValue != null) {
-                pageBuilder.setTimestamp(outputColumn, defaultValue);
+            if (defaultValue == null) {
+                pageBuilder.setNull(outputColumn);
             }
             else {
-                pageBuilder.setNull(outputColumn);
+                pageBuilder.setTimestamp(outputColumn, defaultValue);
             }
         }
         else {
