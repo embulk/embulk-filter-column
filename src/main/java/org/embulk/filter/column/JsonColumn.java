@@ -10,10 +10,18 @@ public class JsonColumn
     private final String name;
     private final Type type;
     private final Value defaultValue;
+    private String objectPath = null; // object path (like directory) of json path
+    private String elementPath = null; // element path (like leaf) of json path
     private StringValue nameValue = null;
-    private String objectPath = null;
-    private String elementPath = null;
+    private StringValue objectPathValue = null;
     private StringValue elementPathValue = null;
+
+    public JsonColumn(
+            String name,
+            Type type)
+    {
+        this(name, type, null);
+    }
 
     public JsonColumn(
             String name,
@@ -23,9 +31,10 @@ public class JsonColumn
         this.name = name;
         this.type = type;
         this.defaultValue = (defaultValue == null ? ValueFactory.newNil() : defaultValue);
-        this.nameValue = ValueFactory.newString(name);
         this.objectPath = objectPath(name);
         this.elementPath = elementPath(name);
+        this.nameValue = ValueFactory.newString(name);
+        this.objectPathValue = ValueFactory.newString(objectPath);
         this.elementPathValue = ValueFactory.newString(elementPath);
     }
 
@@ -44,11 +53,6 @@ public class JsonColumn
         return defaultValue;
     }
 
-    public StringValue getNameValue()
-    {
-        return nameValue;
-    }
-
     public String getObjectPath()
     {
         return objectPath;
@@ -57,6 +61,16 @@ public class JsonColumn
     public String getElementPath()
     {
         return elementPath;
+    }
+
+    public StringValue getNameValue()
+    {
+        return nameValue;
+    }
+
+    public StringValue getObjectPathValue()
+    {
+        return objectPathValue;
     }
 
     public StringValue getElementPathValue()

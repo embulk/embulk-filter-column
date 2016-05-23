@@ -1,17 +1,21 @@
 package org.embulk.filter.column;
 
+import com.google.common.base.Throwables;
+
 import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
 
 import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
-
 import org.embulk.spi.Exec;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.PageReader;
 import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfigException;
 import org.embulk.spi.json.JsonParser;
+import org.embulk.spi.time.Timestamp;
+import org.embulk.spi.time.TimestampParseException;
+import org.embulk.spi.time.TimestampParser;
 import org.embulk.spi.type.BooleanType;
 import org.embulk.spi.type.DoubleType;
 import org.embulk.spi.type.JsonType;
@@ -19,17 +23,13 @@ import org.embulk.spi.type.LongType;
 import org.embulk.spi.type.StringType;
 import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
+
 import org.joda.time.DateTimeZone;
 import org.msgpack.value.Value;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.List;
-
-import com.google.common.base.Throwables;
-import org.embulk.spi.time.Timestamp;
-import org.embulk.spi.time.TimestampParseException;
-import org.embulk.spi.time.TimestampParser;
 
 public class ColumnVisitorImpl implements ColumnVisitor
 {
@@ -77,7 +77,6 @@ public class ColumnVisitorImpl implements ColumnVisitor
             outputInputColumnMap.put(outputColumn, inputColumn); // NOTE: inputColumn would be null
         }
     }
-
 
     // Map outputColumn => default value if present
     private void buildOutputDefaultMap()
@@ -250,7 +249,7 @@ public class ColumnVisitorImpl implements ColumnVisitor
             }
         }
         else {
-            Value value = pageReader.getJson(inputColumn) ;
+            Value value = pageReader.getJson(inputColumn);
             String jsonPath = new StringBuilder("$.").append(inputColumn.getName()).toString();
             pageBuilder.setJson(outputColumn, jsonVisitor.visit(jsonPath, value));
         }
@@ -273,5 +272,4 @@ public class ColumnVisitorImpl implements ColumnVisitor
             pageBuilder.setTimestamp(outputColumn, pageReader.getTimestamp(inputColumn));
         }
     }
-
 }

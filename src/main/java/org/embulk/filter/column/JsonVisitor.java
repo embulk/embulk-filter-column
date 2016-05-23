@@ -22,6 +22,7 @@ import org.msgpack.value.ValueFactory;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,9 +35,9 @@ public class JsonVisitor
     private final Schema inputSchema;
     private final Schema outputSchema;
     private final HashSet<String> shouldVisitSet = new HashSet<>();
-    private final LinkedHashMap<String, HashSet<String>> jsonDropColumns = new LinkedHashMap<>();
-    private final LinkedHashMap<String, LinkedHashMap<String, JsonColumn>> jsonColumns = new LinkedHashMap<>();
-    private final LinkedHashMap<String, List<JsonColumn>> jsonAddColumns = new LinkedHashMap<>();
+    private final HashMap<String, LinkedHashMap<String, JsonColumn>> jsonColumns = new HashMap<>();
+    private final HashMap<String, LinkedHashMap<String, JsonColumn>> jsonAddColumns = new HashMap<>();
+    private final HashMap<String, HashSet<String>> jsonDropColumns = new HashMap<>();
 
     JsonVisitor(PluginTask task, Schema inputSchema, Schema outputSchema)
     {
@@ -51,6 +52,9 @@ public class JsonVisitor
     static Value getDefault(PluginTask task, String name, Type type, ColumnConfig columnConfig)
     {
         Object defaultValue = ColumnVisitorImpl.getDefault(task, name, type, columnConfig);
+        if (defaultValue == null) {
+            return ValueFactory.newNil();
+        }
         if (type instanceof BooleanType) {
             return ValueFactory.newBoolean((Boolean) defaultValue);
         }
@@ -87,9 +91,9 @@ public class JsonVisitor
     {
         String objectPath = JsonColumn.objectPath(path);
         if (! jsonAddColumns.containsKey(objectPath)) {
-            jsonAddColumns.put(objectPath, new ArrayList<JsonColumn>());
+            jsonAddColumns.put(objectPath, new LinkedHashMap<String, JsonColumn>());
         }
-        jsonAddColumns.get(objectPath).add(value);
+        jsonAddColumns.get(objectPath).put(path, value);
     }
 
     private void jsonDropColumnsPut(String path)
@@ -101,7 +105,7 @@ public class JsonVisitor
         jsonDropColumns.get(objectPath).add(path);
     }
 
-    // build jsonColumns and jsonAddColumns
+    // build jsonColumns, jsonAddColumns, and jsonDropColumns
     private void buildJsonSchema()
     {
         List<ColumnConfig> columns = task.getColumns();
@@ -126,7 +130,6 @@ public class JsonVisitor
                 if (! name.startsWith("$.")) {
                     continue;
                 }
-
                 if (column.getSrc().isPresent()) {
                     throw new ConfigException(String.format("columns: src is not supported for json path yet: '%s'", name));
                 }
@@ -137,7 +140,7 @@ public class JsonVisitor
                 }
                 else {
                     Type type = column.getType().isPresent() ? column.getType().get() : null;
-                    jsonColumnsPut(name, new JsonColumn(name, type, null));
+                    jsonColumnsPut(name, new JsonColumn(name, type));
                 }
             }
         }
@@ -150,7 +153,6 @@ public class JsonVisitor
                 if (! name.startsWith("$.")) {
                     continue;
                 }
-
                 if (column.getSrc().isPresent()) {
                     throw new ConfigException(String.format("add_columns: src is not supported for json path yet: '%s'", name));
                 }
@@ -166,10 +168,9 @@ public class JsonVisitor
         }
     }
 
+    // json partial path => Boolean to avoid unnecessary type: json visit
     private void buildShouldVisitSet()
     {
-        // json partial path => Boolean to avoid unnecessary type: json visit
-
         ArrayList<ColumnConfig> columnConfigs = new ArrayList<>(task.getColumns());
         columnConfigs.addAll(task.getAddColumns());
         columnConfigs.addAll(task.getDropColumns());
@@ -200,9 +201,113 @@ public class JsonVisitor
         }
     }
 
-    private boolean shouldVisit(String jsonPath)
+    boolean shouldVisit(String jsonPath)
     {
         return shouldVisitSet.contains(jsonPath);
+    }
+
+    String newArrayJsonPath(String rootPath, int i)
+    {
+        String newPath = new StringBuilder(rootPath).append("[").append(Integer.toString(i)).append("]").toString();
+        if (! shouldVisit(newPath)) {
+            newPath = new StringBuilder(rootPath).append("[*]").toString(); // try [*] too
+        }
+        return newPath;
+    }
+
+    String newMapJsonPath(String rootPath, Value elementPathValue)
+    {
+        String elementPath = elementPathValue.asStringValue().asString();
+        String newPath = new StringBuilder(rootPath).append(".").append(elementPath).toString();
+        return newPath;
+    }
+
+    Value visitArray(String rootPath, ArrayValue arrayValue)
+    {
+        int size = arrayValue.size();
+        ArrayList<Value> newValue = new ArrayList<>(size);
+        int j = 0;
+        if (this.jsonDropColumns.containsKey(rootPath)) {
+            HashSet<String> jsonDropColumns = this.jsonDropColumns.get(rootPath);
+            for (int i = 0; i < size; i++) {
+                String newPath = newArrayJsonPath(rootPath, i);
+                if (! jsonDropColumns.contains(newPath)) {
+                    newValue.add(j++, visit(newPath, arrayValue.get(i)));
+                }
+            }
+        }
+        else if (this.jsonColumns.containsKey(rootPath)) {
+            LinkedHashMap<String, JsonColumn> jsonColumns = this.jsonColumns.get(rootPath);
+            for (int i = 0; i < size; i++) {
+                String newPath = newArrayJsonPath(rootPath, i);
+                if (jsonColumns.containsKey(newPath)) {
+                    newValue.add(j++, visit(newPath, arrayValue.get(i)));
+                }
+            }
+        }
+        else {
+            for (int i = 0; i < size; i++) {
+                String newPath = newArrayJsonPath(rootPath, i);
+                newValue.add(j++, visit(newPath, arrayValue.get(i)));
+            }
+        }
+        if (this.jsonAddColumns.containsKey(rootPath)) {
+            for (JsonColumn jsonColumn : this.jsonAddColumns.get(rootPath).values()) {
+                newValue.add(j++, jsonColumn.getDefaultValue());
+            }
+        }
+        return ValueFactory.newArray(newValue.toArray(new Value[0]), true);
+    }
+
+    Value visitMap(String rootPath, MapValue mapValue)
+    {
+        int size = mapValue.size();
+        int i = 0;
+        ArrayList<Value> newValue = new ArrayList<>(size * 2);
+        if (this.jsonDropColumns.containsKey(rootPath)) {
+            HashSet<String> jsonDropColumns = this.jsonDropColumns.get(rootPath);
+            for (Map.Entry<Value, Value> entry : mapValue.entrySet()) {
+                Value k = entry.getKey();
+                Value v = entry.getValue();
+                String newPath = newMapJsonPath(rootPath, k);
+                if (! jsonDropColumns.contains(newPath)) {
+                    Value visited = visit(newPath, v);
+                    newValue.add(i++, k);
+                    newValue.add(i++, visited);
+                }
+            }
+        }
+        else if (this.jsonColumns.containsKey(rootPath)) {
+            Map<Value, Value> map = mapValue.map();
+            for (JsonColumn jsonColumn : jsonColumns.get(rootPath).values()) {
+                Value k = jsonColumn.getElementPathValue();
+                Value v = map.get(k);
+                String newPath = jsonColumn.getName();
+                Value visited = visit(newPath, v);
+                if (visited == null) {
+                    visited = jsonColumn.getDefaultValue();
+                }
+                newValue.add(i++, k);
+                newValue.add(i++, visited);
+            }
+        }
+        else {
+            for (Map.Entry<Value, Value> entry : mapValue.entrySet()) {
+                Value k = entry.getKey();
+                Value v = entry.getValue();
+                String newPath = newMapJsonPath(rootPath, k);
+                Value visited = visit(newPath, v);
+                newValue.add(i++, k);
+                newValue.add(i++, visited);
+            }
+        }
+        if (this.jsonAddColumns.containsKey(rootPath)) {
+            for (JsonColumn jsonColumn : this.jsonAddColumns.get(rootPath).values()) {
+                newValue.add(i++, jsonColumn.getElementPathValue());
+                newValue.add(i++, jsonColumn.getDefaultValue());
+            }
+        }
+        return ValueFactory.newMap(newValue.toArray(new Value[0]), true);
     }
 
     public Value visit(String rootPath, Value value)
@@ -211,106 +316,10 @@ public class JsonVisitor
             return value;
         }
         if (value.isArrayValue()) {
-            ArrayValue arrayValue = value.asArrayValue();
-            int size = arrayValue.size();
-            ArrayList<Value> newValue = new ArrayList<>(size);
-            int j = 0;
-            if (this.jsonDropColumns.containsKey(rootPath)) {
-                HashSet<String> jsonDropColumns = this.jsonDropColumns.get(rootPath);
-                for (int i = 0; i < size; i++) {
-                    String newPath = new StringBuilder(rootPath).append("[").append(Integer.toString(i)).append("]").toString();
-                    if (! shouldVisit(newPath)) {
-                        newPath = new StringBuilder(rootPath).append("[*]").toString(); // try [*] too
-                    }
-                    if (! jsonDropColumns.contains(newPath)) {
-                        Value v = arrayValue.get(i);
-                        Value visited = visit(newPath, v);
-                        newValue.add(j++, visited);
-                    }
-                }
-            }
-            else if (this.jsonColumns.containsKey(rootPath)) {
-                LinkedHashMap<String, JsonColumn> jsonColumns = this.jsonColumns.get(rootPath);
-                for (int i = 0; i < size; i++) {
-                    String newPath = new StringBuilder(rootPath).append("[").append(Integer.toString(i)).append("]").toString();
-                    if (! shouldVisit(newPath)) {
-                        newPath = new StringBuilder(rootPath).append("[*]").toString(); // try [*] too
-                    }
-                    if (jsonColumns.containsKey(newPath)) {
-                        Value v = arrayValue.get(i);
-                        Value visited = visit(newPath, v);
-                        newValue.add(j++, visited);
-                    }
-                }
-            }
-            else {
-                for (int i = 0; i < size; i++) {
-                    String newPath = new StringBuilder(rootPath).append("[").append(Integer.toString(i)).append("]").toString();
-                    if (! shouldVisit(newPath)) {
-                        newPath = new StringBuilder(rootPath).append("[*]").toString(); // try [*] too
-                    }
-                    Value v = arrayValue.get(i);
-                    Value visited = visit(newPath, v);
-                    newValue.add(j++, visited);
-                }
-            }
-            if (this.jsonAddColumns.containsKey(rootPath)) {
-                List<JsonColumn> jsonAddColumns = this.jsonAddColumns.get(rootPath);
-                for (JsonColumn jsonColumn : jsonAddColumns) {
-                    newValue.add(j++, jsonColumn.getDefaultValue());
-                }
-            }
-            return ValueFactory.newArray(newValue.toArray(new Value[0]), true);
+            return visitArray(rootPath, value.asArrayValue());
         }
         else if (value.isMapValue()) {
-            MapValue mapValue = value.asMapValue();
-            int size = mapValue.size();
-            int i = 0;
-            ArrayList<Value> newValue = new ArrayList<>(size * 2);
-            if (this.jsonDropColumns.containsKey(rootPath)) {
-                HashSet<String> jsonDropColumns = this.jsonDropColumns.get(rootPath);
-                for (Map.Entry<Value, Value> entry : mapValue.entrySet()) {
-                    Value k = entry.getKey();
-                    Value v = entry.getValue();
-                    String newPath = new StringBuilder(rootPath).append(".").append(k.asStringValue().asString()).toString();
-                    if (! jsonDropColumns.contains(newPath)) {
-                        Value visited = visit(newPath, v);
-                        newValue.add(i++, k);
-                        newValue.add(i++, visited);
-                    }
-                }
-            }
-            else if (this.jsonColumns.containsKey(rootPath)) {
-                Map<Value, Value> map = mapValue.map();
-                for (JsonColumn jsonColumn : jsonColumns.get(rootPath).values()) {
-                    Value k = ValueFactory.newString(jsonColumn.getElementPath());
-                    Value v = map.get(k);
-                    String newPath = jsonColumn.getName();
-                    Value visited = visit(newPath, v);
-                    if (visited == null) {
-                        visited = jsonColumn.getDefaultValue();
-                    }
-                    newValue.add(i++, k);
-                    newValue.add(i++, visited);
-                }
-            }
-            else {
-                for (Map.Entry<Value, Value> entry : mapValue.entrySet()) {
-                    Value k = entry.getKey();
-                    Value v = entry.getValue();
-                    String newPath = new StringBuilder(rootPath).append(".").append(k.asStringValue().asString()).toString();
-                    Value visited = visit(newPath, v);
-                    newValue.add(i++, k);
-                    newValue.add(i++, visited);
-                }
-            }
-            if (this.jsonAddColumns.containsKey(rootPath)) {
-                for (JsonColumn jsonColumn : jsonAddColumns.get(rootPath)) {
-                    newValue.add(i++, jsonColumn.getElementPathValue());
-                    newValue.add(i++, jsonColumn.getDefaultValue());
-                }
-            }
-            return ValueFactory.newMap(newValue.toArray(new Value[0]), true);
+            return visitMap(rootPath, value.asMapValue());
         }
         else {
             return value;
