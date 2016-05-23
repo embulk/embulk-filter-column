@@ -109,6 +109,22 @@ VmjbjAA0tOoSEPv_vKAGMtD_0aXZji0abGe7_VXHmUQ,3962
 C40P5H1WcBx-aWFDJCI8th6QPEI2DOUgupt_gB8UutE,7323
 ```
 
+## JSONPath (like) name
+
+For type: json column, you can specify [JSONPath](http://goessner.net/articles/JsonPath/) for column's name as:
+
+```
+$.payload.key1
+$.payload.array[0]
+$.payload.array[*]
+```
+
+See [example/json_columns.yml](example/json_columns.yml), [example/json_add_columns.yml](example/json_add_columns.yml), and [example/json_drop_columns.yml](example/json_drop_columns.yml).
+
+* NOTE: JSONPath syntax is not fully supported
+* NOTE: Embulk's type: json cannot have timestamp column, so `type: timesatmp` for `add_columns` or `columns` with default is not available
+* NOTE: `src` for `add_columns` or `columns` is not supported yet
+
 ## ToDo
 
 * Write test
@@ -119,7 +135,7 @@ Run example:
 
 ```
 $ ./gradlew classpath
-$ embulk run -I lib example/example.yml
+$ embulk preview -I lib example/example.yml
 ```
 
 Run test:

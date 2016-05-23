@@ -19,7 +19,11 @@ filters:
     default_timezone: "Asia/Tokyo"
     default_timestamp_format: "%Y-%m-%d"
     columns:
-      - {name: json, type: json, default: "{}"}
+      - {name: time}
+      - {name: id}
+      - {name: name}
+      - {name: score}
+      - {name: json, default: "{}"}
     add_columns:
       - {name: $.json.foo, type: long, default: 1}
       - {name: $.json.d, type: string, default: "2015-07-13"}
