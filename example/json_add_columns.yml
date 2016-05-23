@@ -1,0 +1,27 @@
+in:
+  type: file
+  path_prefix: example/example.csv
+  parser:
+    type: csv
+    charset: UTF-8
+    newline: CRLF
+    null_string: 'NULL'
+    skip_header_lines: 1
+    comment_line_marker: '#'
+    columns:
+      - {name: time,  type: timestamp, format: "%Y-%m-%d"}
+      - {name: id, type: long}
+      - {name: name, type: string}
+      - {name: score, type: double}
+      - {name: json, type: json}
+filters:
+  - type: column
+    default_timezone: "Asia/Tokyo"
+    default_timestamp_format: "%Y-%m-%d"
+    add_columns:
+      - {name: $.json.foo, type: long, default: 1}
+      - {name: $.json.d, type: timestamp, default: "2015-07-13"}
+      - {name: $.json.t, type: timestamp, default: "2015-07-13 00:00:00", timezone: "UTC", format: "%Y-%m-%d %H:%M:%S"}
+      - {name: $.json.copy_score, src: score}
+out:
+  type: stdout

@@ -126,9 +126,6 @@ public class JsonVisitor
                 if (! name.startsWith("$.")) {
                     continue;
                 }
-                if (! (column.getSrc().isPresent() && column.getSrc().get().startsWith("$."))) {
-                    continue;
-                }
 
                 if (column.getSrc().isPresent()) {
                     throw new ConfigException(String.format("columns: src is not supported for json path yet: '%s'", name));
@@ -151,9 +148,6 @@ public class JsonVisitor
                 String name         = column.getName();
                 // skip json path notation to build output schema
                 if (name.startsWith("$.")) {
-                    continue;
-                }
-                if (column.getSrc().isPresent() && column.getSrc().get().startsWith("$.")) {
                     continue;
                 }
 
@@ -208,9 +202,6 @@ public class JsonVisitor
 
     public Value visit(String rootPath, Value value)
     {
-        if (value == null) {
-            return null;
-        }
         if (! shouldVisit(rootPath)) {
             return value;
         }
@@ -291,7 +282,7 @@ public class JsonVisitor
                     Value v = map.get(k);
                     String newPath = jsonColumn.getName();
                     Value visited = visit(newPath, v);
-                    if (visited != null) {
+                    if (visited == null) {
                         visited = jsonColumn.getDefaultValue();
                     }
                     newValue.add(i++, k);

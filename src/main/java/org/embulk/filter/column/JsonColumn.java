@@ -20,7 +20,7 @@ public class JsonColumn
     {
         this.name = name;
         this.type = type;
-        this.defaultValue = defaultValue;
+        this.defaultValue = (defaultValue == null ? ValueFactory.newNil() : defaultValue);
         this.nameValue = ValueFactory.newString(name);
         this.objectPath = objectPath(name);
         this.elementPath = elementPath(name);
