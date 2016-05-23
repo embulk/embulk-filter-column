@@ -18,10 +18,10 @@ filters:
   - type: column
     default_timezone: "Asia/Tokyo"
     default_timestamp_format: "%Y-%m-%d"
+    columns:
+      - {name: json, type: json, default: "{}"}
     add_columns:
       - {name: $.json.foo, type: long, default: 1}
-      - {name: $.json.d, type: timestamp, default: "2015-07-13"}
-      - {name: $.json.t, type: timestamp, default: "2015-07-13 00:00:00", timezone: "UTC", format: "%Y-%m-%d %H:%M:%S"}
-      - {name: $.json.copy_score, src: score}
+      - {name: $.json.d, type: string, default: "2015-07-13"}
 out:
   type: stdout

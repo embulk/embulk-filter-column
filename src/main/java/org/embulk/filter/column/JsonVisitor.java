@@ -145,9 +145,9 @@ public class JsonVisitor
         // Add columns to last. If you want to add to head or middle, you can use `columns` option
         if (addColumns.size() > 0) {
             for (ColumnConfig column : addColumns) {
-                String name         = column.getName();
-                // skip json path notation to build output schema
-                if (name.startsWith("$.")) {
+                String name = column.getName();
+                // skip NON json path notation to build output schema
+                if (! name.startsWith("$.")) {
                     continue;
                 }
 
@@ -169,7 +169,12 @@ public class JsonVisitor
     private void buildShouldVisitSet()
     {
         // json partial path => Boolean to avoid unnecessary type: json visit
-        for (ColumnConfig columnConfig : task.getColumns()) {
+
+        ArrayList<ColumnConfig> columnConfigs = new ArrayList<>(task.getColumns());
+        columnConfigs.addAll(task.getAddColumns());
+        columnConfigs.addAll(task.getDropColumns());
+
+        for (ColumnConfig columnConfig : columnConfigs) {
             String name = columnConfig.getName();
             if (!name.startsWith("$.")) {
                 continue;
@@ -301,7 +306,7 @@ public class JsonVisitor
             }
             if (this.jsonAddColumns.containsKey(rootPath)) {
                 for (JsonColumn jsonColumn : jsonAddColumns.get(rootPath)) {
-                    newValue.add(i++, jsonColumn.getNameValue());
+                    newValue.add(i++, jsonColumn.getElementPathValue());
                     newValue.add(i++, jsonColumn.getDefaultValue());
                 }
             }

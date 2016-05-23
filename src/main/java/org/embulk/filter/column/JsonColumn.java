@@ -1,6 +1,7 @@
 package org.embulk.filter.column;
 
 import org.embulk.spi.type.Type;
+import org.msgpack.value.StringValue;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
 
@@ -9,9 +10,10 @@ public class JsonColumn
     private final String name;
     private final Type type;
     private final Value defaultValue;
-    private Value nameValue = null;
+    private StringValue nameValue = null;
     private String objectPath = null;
     private String elementPath = null;
+    private StringValue elementPathValue = null;
 
     public JsonColumn(
             String name,
@@ -24,6 +26,7 @@ public class JsonColumn
         this.nameValue = ValueFactory.newString(name);
         this.objectPath = objectPath(name);
         this.elementPath = elementPath(name);
+        this.elementPathValue = ValueFactory.newString(elementPath);
     }
 
     public String getName()
@@ -41,7 +44,7 @@ public class JsonColumn
         return defaultValue;
     }
 
-    public Value getNameValue()
+    public StringValue getNameValue()
     {
         return nameValue;
     }
@@ -54,6 +57,11 @@ public class JsonColumn
     public String getElementPath()
     {
         return elementPath;
+    }
+
+    public StringValue getElementPathValue()
+    {
+        return elementPathValue;
     }
 
     public static String objectPath(String path)

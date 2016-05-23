@@ -245,7 +245,8 @@ public class ColumnVisitorImpl implements ColumnVisitor
                 pageBuilder.setNull(outputColumn);
             }
             else {
-                pageBuilder.setJson(outputColumn, defaultValue);
+                String jsonPath = new StringBuilder("$.").append(inputColumn.getName()).toString();
+                pageBuilder.setJson(outputColumn, jsonVisitor.visit(jsonPath, defaultValue));
             }
         }
         else {
