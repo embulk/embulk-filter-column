@@ -1,6 +1,7 @@
 package org.embulk.filter.column;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 import org.embulk.config.Config;
@@ -13,14 +14,23 @@ import org.embulk.config.TaskSource;
 import org.embulk.spi.Column;
 import org.embulk.spi.Exec;
 import org.embulk.spi.FilterPlugin;
+import org.embulk.spi.json.JsonParser;
 import org.embulk.spi.Page;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.PageOutput;
 import org.embulk.spi.PageReader;
 import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfigException;
+import org.embulk.spi.time.Timestamp;
 import org.embulk.spi.time.TimestampParser;
+import org.embulk.spi.time.TimestampParseException;
 import org.embulk.spi.type.Type;
+import org.embulk.spi.type.BooleanType;
+import org.embulk.spi.type.DoubleType;
+import org.embulk.spi.type.JsonType;
+import org.embulk.spi.type.LongType;
+import org.embulk.spi.type.StringType;
+import org.embulk.spi.type.TimestampType;
 
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -120,6 +130,10 @@ public class ColumnFilterPlugin implements FilterPlugin
                 String name = inputColumn.getName();
                 boolean matched = false;
                 for (ColumnConfig dropColumn : dropColumns) {
+                    // skip json path notation to build outputSchema
+                    if (dropColumn.getName().startsWith("$.")) {
+                        continue;
+                    }
                     if (dropColumn.getName().equals(name)) {
                         matched = true;
                         break;
@@ -133,6 +147,14 @@ public class ColumnFilterPlugin implements FilterPlugin
         }
         else if (columns.size() > 0) {
             for (ColumnConfig column : columns) {
+                // skip json path notation to build output schema
+                if (column.getName().startsWith("$.")) {
+                    continue;
+                }
+                if (column.getSrc().isPresent() && column.getSrc().get().startsWith("$.")) {
+                    continue;
+                }
+
                 String name                   = column.getName();
                 Optional<Type>   type         = column.getType();
                 Optional<Object> defaultValue = column.getDefault();
@@ -160,8 +182,8 @@ public class ColumnFilterPlugin implements FilterPlugin
             }
         }
         else {
-            for (Column inputColumn : inputSchema.getColumns()) {
-                Column outputColumn = new Column(i++, inputColumn.getName(), inputColumn.getType());
+            for (Column column : inputSchema.getColumns()) {
+                Column outputColumn = new Column(i++, column.getName(), column.getType());
                 builder.add(outputColumn);
             }
         }
@@ -169,6 +191,14 @@ public class ColumnFilterPlugin implements FilterPlugin
         // Add columns to last. If you want to add to head or middle, you can use `columns` option
         if (addColumns.size() > 0) {
             for (ColumnConfig column : addColumns) {
+                // skip json path notation to build output schema
+                if (column.getName().startsWith("$.")) {
+                    continue;
+                }
+                if (column.getSrc().isPresent() && column.getSrc().get().startsWith("$.")) {
+                    continue;
+                }
+
                 String name                   = column.getName();
                 Optional<Type> type           = column.getType();
                 Optional<Object> defaultValue = column.getDefault();

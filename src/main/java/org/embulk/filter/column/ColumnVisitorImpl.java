@@ -41,6 +41,7 @@ public class ColumnVisitorImpl implements ColumnVisitor
     private final PageBuilder pageBuilder;
     private final HashMap<Column, Column> outputInputColumnMap = new HashMap<>();
     private final HashMap<Column, Object> outputDefaultMap = new HashMap<>();
+    private final JsonVisitor jsonVisitor;
 
     ColumnVisitorImpl(PluginTask task, Schema inputSchema, Schema outputSchema, PageReader pageReader, PageBuilder pageBuilder)
     {
@@ -51,6 +52,7 @@ public class ColumnVisitorImpl implements ColumnVisitor
         this.pageBuilder = pageBuilder;
         buildOutputInputColumnMap();
         buildOutputDefaultMap();
+        this.jsonVisitor = new JsonVisitor(task, inputSchema, outputSchema);
     }
 
     // Map outputColumn => inputColumn
@@ -84,9 +86,9 @@ public class ColumnVisitorImpl implements ColumnVisitor
             String name = outputColumn.getName();
             Type type = outputColumn.getType();
 
-            Object defaultValue = getDefault(name, type, task.getColumns(), task);
+            Object defaultValue = getDefault(task, name, type, task.getColumns());
             if (defaultValue == null) {
-                defaultValue = getDefault(name, type, task.getAddColumns(), task);
+                defaultValue = getDefault(task, name, type, task.getAddColumns());
             }
             if (defaultValue != null) {
                 outputDefaultMap.put(outputColumn, defaultValue);
@@ -94,7 +96,7 @@ public class ColumnVisitorImpl implements ColumnVisitor
         }
     }
 
-    private String getSrc(String name, List<ColumnConfig> columnConfigs)
+    static String getSrc(String name, List<ColumnConfig> columnConfigs)
     {
         for (ColumnConfig columnConfig : columnConfigs) {
             if (columnConfig.getName().equals(name) &&
@@ -105,64 +107,57 @@ public class ColumnVisitorImpl implements ColumnVisitor
         return null;
     }
 
-    private Object getDefault(String name, Type type, List<ColumnConfig> columnConfigs, PluginTask task)
+    static Object getDefault(PluginTask task, String name, Type type, List<ColumnConfig> columnConfigs)
     {
         for (ColumnConfig columnConfig : columnConfigs) {
             if (columnConfig.getName().equals(name)) {
-                if (type instanceof BooleanType) {
-                    if (columnConfig.getDefault().isPresent()) {
-                        return (Boolean) columnConfig.getDefault().get();
-                    }
+                return getDefault(task, name, type, columnConfig);
+            }
+        }
+        return null;
+    }
+
+    static Object getDefault(PluginTask task, String name, Type type, ColumnConfig columnConfig)
+    {
+        if (type instanceof BooleanType) {
+            if (columnConfig.getDefault().isPresent()) {
+                return (Boolean) columnConfig.getDefault().get();
+            }
+        }
+        else if (type instanceof LongType) {
+            if (columnConfig.getDefault().isPresent()) {
+                return new Long(columnConfig.getDefault().get().toString());
+            }
+        }
+        else if (type instanceof DoubleType) {
+            if (columnConfig.getDefault().isPresent()) {
+                return new Double(columnConfig.getDefault().get().toString());
+            }
+        }
+        else if (type instanceof StringType) {
+            if (columnConfig.getDefault().isPresent()) {
+                return columnConfig.getDefault().get();
+            }
+        }
+        else if (type instanceof JsonType) {
+            if (columnConfig.getDefault().isPresent()) {
+                JsonParser parser = new JsonParser();
+                return parser.parse((String) columnConfig.getDefault().get());
+            }
+        }
+        else if (type instanceof TimestampType) {
+            if (columnConfig.getDefault().isPresent()) {
+                String time   = (String) columnConfig.getDefault().get();
+                String format = columnConfig.getFormat().or(task.getDefaultTimestampFormat());
+                DateTimeZone timezone = columnConfig.getTimeZone().or(task.getDefaultTimeZone());
+                TimestampParser parser = new TimestampParser(task.getJRuby(), format, timezone);
+                try {
+                    Timestamp defaultValue = parser.parse(time);
+                    return defaultValue;
                 }
-                else if (type instanceof LongType) {
-                    if (columnConfig.getDefault().isPresent()) {
-                        return new Long(columnConfig.getDefault().get().toString());
-                    }
+                catch (TimestampParseException ex) {
+                    throw Throwables.propagate(ex);
                 }
-                else if (type instanceof DoubleType) {
-                    if (columnConfig.getDefault().isPresent()) {
-                        return new Double(columnConfig.getDefault().get().toString());
-                    }
-                }
-                else if (type instanceof StringType) {
-                    if (columnConfig.getDefault().isPresent()) {
-                        return columnConfig.getDefault().get();
-                    }
-                }
-                else if (type instanceof JsonType) {
-                    if (columnConfig.getDefault().isPresent()) {
-                        JsonParser parser = new JsonParser();
-                        return parser.parse((String) columnConfig.getDefault().get());
-                    }
-                }
-                else if (type instanceof TimestampType) {
-                    if (columnConfig.getDefault().isPresent()) {
-                        String time   = (String) columnConfig.getDefault().get();
-                        String format;
-                        if (columnConfig.getFormat().isPresent()) {
-                            format = columnConfig.getFormat().get();
-                        }
-                        else {
-                            format = task.getDefaultTimestampFormat();
-                        }
-                        DateTimeZone timezone;
-                        if (columnConfig.getTimeZone().isPresent()) {
-                            timezone = columnConfig.getTimeZone().get();
-                        }
-                        else {
-                            timezone = task.getDefaultTimeZone();
-                        }
-                        TimestampParser parser = new TimestampParser(task.getJRuby(), format, timezone);
-                        try {
-                            Timestamp defaultValue = parser.parse(time);
-                            return defaultValue;
-                        }
-                        catch (TimestampParseException ex) {
-                            throw Throwables.propagate(ex);
-                        }
-                    }
-                }
-                return null;
             }
         }
         return null;
@@ -254,7 +249,9 @@ public class ColumnVisitorImpl implements ColumnVisitor
             }
         }
         else {
-            pageBuilder.setJson(outputColumn, pageReader.getJson(inputColumn));
+            Value value = pageReader.getJson(inputColumn) ;
+            String jsonPath = new StringBuilder("$.").append(inputColumn.getName()).toString();
+            pageBuilder.setJson(outputColumn, jsonVisitor.visit(jsonPath, value));
         }
     }
 

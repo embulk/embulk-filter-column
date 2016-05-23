@@ -29,6 +29,7 @@ filters:
       - {name: foo,  default: 1, type: long}
       - {name: id}
       - {name: copy_score, src: score}
-      - {name: json, default: "{\"foo\": \"FOO\"}"}
+      - {name: json, default: "{\"foo\":\"FOO\"}"}
+      - {name: $.json.foo}
 out:
   type: stdout
