@@ -119,11 +119,17 @@ $.payload.array[0]
 $.payload.array[*]
 ```
 
-See [example/json_columns.yml](example/json_columns.yml), [example/json_add_columns.yml](example/json_add_columns.yml), and [example/json_drop_columns.yml](example/json_drop_columns.yml).
+EXAMPLE:
 
-* NOTE: JSONPath syntax is not fully supported
-* NOTE: Embulk's type: json cannot have timestamp column, so `type: timesatmp` for `add_columns` or `columns` with default is not available
-* NOTE: `src` for `add_columns` or `columns` is not supported yet
+* [example/json_columns.yml](example/json_columns.yml)
+* [example/json_add_columns.yml](example/json_add_columns.yml)
+* [example/json_drop_columns.yml](example/json_drop_columns.yml)
+
+NOTE:
+
+* JSONPath syntax is not fully supported
+* Embulk's type: json cannot have timestamp column, so `type: timesatmp` for `add_columns` or `columns` with default is not available
+* `src` for `add_columns` or `columns` is not supported yet
 
 ## ToDo
 
