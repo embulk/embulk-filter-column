@@ -1,3 +1,9 @@
+# 0.5.0.pre1 (2016-05-24)
+
+Enhancements:
+
+* Support JSONPath (like) name
+
 # 0.4.0 (2016-02-01)
 
 Enhancements:
