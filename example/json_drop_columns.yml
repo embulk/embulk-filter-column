@@ -1,10 +1,3 @@
-# in:
-#   type: random
-#   rows: 100
-#   schema:
-#     id: primary_key
-#     name: string
-#     score: integer
 in:
   type: file
   path_prefix: example/example.csv
@@ -23,13 +16,7 @@ in:
       - {name: json, type: json}
 filters:
   - type: column
-    columns:
-      - {name: time, default: "2015-07-13", format: "%Y-%m-%d"}
-      - {name: name, default: "foo"}
-      - {name: foo,  default: 1, type: long}
-      - {name: id}
-      - {name: copy_score, src: score}
-      - {name: json, default: "{\"foo\":\"FOO\"}"}
-      - {name: $.json.foo}
+    drop_columns:
+      - {name: $.json.foo }
 out:
   type: stdout

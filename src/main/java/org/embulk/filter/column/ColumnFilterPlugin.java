@@ -120,6 +120,10 @@ public class ColumnFilterPlugin implements FilterPlugin
                 String name = inputColumn.getName();
                 boolean matched = false;
                 for (ColumnConfig dropColumn : dropColumns) {
+                    // skip json path notation to build outputSchema
+                    if (dropColumn.getName().startsWith("$.")) {
+                        continue;
+                    }
                     if (dropColumn.getName().equals(name)) {
                         matched = true;
                         break;
@@ -133,6 +137,14 @@ public class ColumnFilterPlugin implements FilterPlugin
         }
         else if (columns.size() > 0) {
             for (ColumnConfig column : columns) {
+                // skip json path notation to build output schema
+                if (column.getName().startsWith("$.")) {
+                    continue;
+                }
+                if (column.getSrc().isPresent() && column.getSrc().get().startsWith("$.")) {
+                    continue;
+                }
+
                 String name                   = column.getName();
                 Optional<Type>   type         = column.getType();
                 Optional<Object> defaultValue = column.getDefault();
@@ -160,8 +172,8 @@ public class ColumnFilterPlugin implements FilterPlugin
             }
         }
         else {
-            for (Column inputColumn : inputSchema.getColumns()) {
-                Column outputColumn = new Column(i++, inputColumn.getName(), inputColumn.getType());
+            for (Column column : inputSchema.getColumns()) {
+                Column outputColumn = new Column(i++, column.getName(), column.getType());
                 builder.add(outputColumn);
             }
         }
@@ -169,6 +181,14 @@ public class ColumnFilterPlugin implements FilterPlugin
         // Add columns to last. If you want to add to head or middle, you can use `columns` option
         if (addColumns.size() > 0) {
             for (ColumnConfig column : addColumns) {
+                // skip json path notation to build output schema
+                if (column.getName().startsWith("$.")) {
+                    continue;
+                }
+                if (column.getSrc().isPresent() && column.getSrc().get().startsWith("$.")) {
+                    continue;
+                }
+
                 String name                   = column.getName();
                 Optional<Type> type           = column.getType();
                 Optional<Object> defaultValue = column.getDefault();
