@@ -1,3 +1,9 @@
+# 0.5.0 (2016-05-31)
+
+Enhancements:
+
+* Support src (rename or copy columns) for JSONPath (but only partially)
+
 # 0.5.0.pre1 (2016-05-24)
 
 Enhancements:
