@@ -151,6 +151,14 @@ Run test:
 $ ./gradlew test
 ```
 
+Run test with coverage reports:
+
+```
+$ ./gradlew test jacocoTestReport
+```
+
+open build/reports/jacoco/test/html/index.html
+
 Run checkstyle:
 
 ```

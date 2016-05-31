@@ -134,8 +134,7 @@ public class JsonColumn
     {
         String[] parts = path.split("\\.");
         StringBuilder builder = new StringBuilder();
-        builder.append(parts[0]);
-        for (int i = 1; i < parts.length - 1; i++) {
+        for (int i = 0; i < parts.length - 1; i++) {
             builder.append(".").append(parts[i]);
         }
         if (parts[parts.length - 1].contains("[")) {
@@ -145,12 +144,18 @@ public class JsonColumn
                 builder.append("[").append(arrayParts[j]);
             }
         }
-        return builder.toString();
+        return builder.deleteCharAt(0).toString();
     }
 
     public static String baseName(String path)
     {
         String[] parts = path.split("\\.");
-        return parts[parts.length - 1];
+        String[] arrayParts = parts[parts.length - 1].split("\\[");
+        if (arrayParts.length == 1) { // no [i]
+            return arrayParts[arrayParts.length - 1];
+        }
+        else {
+            return "[" + arrayParts[arrayParts.length - 1];
+        }
     }
 }
