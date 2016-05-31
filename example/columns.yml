@@ -24,5 +24,6 @@ filters:
       - {name: copy_score, src: score}
       - {name: json, default: "{\"foo\":\"FOO\"}"}
       - {name: $.json.foo}
+      - {name: $.json.copy_foo, src: $.json.foo}
 out:
   type: stdout
