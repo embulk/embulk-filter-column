@@ -1,5 +1,6 @@
 package org.embulk.filter.column;
 
+import org.embulk.config.ConfigException;
 import org.embulk.spi.type.Type;
 import org.msgpack.value.StringValue;
 import org.msgpack.value.Value;
@@ -7,40 +8,60 @@ import org.msgpack.value.ValueFactory;
 
 public class JsonColumn
 {
-    private final String name;
+    private final String path;
     private final Type type;
     private final Value defaultValue;
-    private String objectPath = null; // object path (like directory) of json path
-    private String elementPath = null; // element path (like leaf) of json path
-    private StringValue nameValue = null;
-    private StringValue objectPathValue = null;
-    private StringValue elementPathValue = null;
+    private final String src;
 
-    public JsonColumn(
-            String name,
-            Type type)
+    private StringValue pathValue = null;
+    private String parentPath = null;
+    private String baseName = null;
+    private StringValue parentPathValue = null;
+    private StringValue baseNameValue = null;
+
+    private StringValue srcValue = null;
+    private String srcParentPath = null;
+    private String srcBaseName = null;
+    private StringValue srcParentPathValue = null;
+    private StringValue srcBaseNameValue = null;
+
+    public JsonColumn(String path, Type type)
     {
-        this(name, type, null);
+        this(path, type, null, null);
     }
 
-    public JsonColumn(
-            String name,
-            Type type,
-            Value defaultValue)
+    public JsonColumn(String path, Type type, Value defaultValue)
     {
-        this.name = name;
+        this(path, type, defaultValue, null);
+    }
+
+    public JsonColumn(String path, Type type, Value defaultValue, String src)
+    {
+        this.path = path;
         this.type = type;
         this.defaultValue = (defaultValue == null ? ValueFactory.newNil() : defaultValue);
-        this.objectPath = objectPath(name);
-        this.elementPath = elementPath(name);
-        this.nameValue = ValueFactory.newString(name);
-        this.objectPathValue = ValueFactory.newString(objectPath); // trunk
-        this.elementPathValue = ValueFactory.newString(elementPath); // leaf
+        this.src = (src == null ? path : src);
+
+        this.pathValue = ValueFactory.newString(path);
+        this.parentPath = parentPath(path);
+        this.baseName = baseName(path);
+        this.parentPathValue = ValueFactory.newString(parentPath);
+        this.baseNameValue = ValueFactory.newString(baseName);
+
+        this.srcValue = ValueFactory.newString(this.src);
+        this.srcParentPath = parentPath(this.src);
+        this.srcBaseName = baseName(this.src);
+        this.srcParentPathValue = ValueFactory.newString(this.srcParentPath);
+        this.srcBaseNameValue = ValueFactory.newString(this.srcBaseName);
+
+        if (! srcParentPath.equals(parentPath)) {
+            throw new ConfigException(String.format("The branch (parent path) of src \"%s\" must be same with of name \"%s\" yet", src, path));
+        }
     }
 
-    public String getName()
+    public String getPath()
     {
-        return name;
+        return path;
     }
 
     public Type getType()
@@ -53,32 +74,63 @@ public class JsonColumn
         return defaultValue;
     }
 
-    public String getObjectPath()
+    public String getSrc()
     {
-        return objectPath;
+        return src;
     }
 
-    public String getElementPath()
+    public StringValue getPathValue()
     {
-        return elementPath;
+        return pathValue;
     }
 
-    public StringValue getNameValue()
+    public String getParentPath()
     {
-        return nameValue;
+        return parentPath;
     }
 
-    public StringValue getObjectPathValue()
+    public String getBaseName()
     {
-        return objectPathValue;
+        return baseName;
     }
 
-    public StringValue getElementPathValue()
+    public StringValue getParentPathValue()
     {
-        return elementPathValue;
+        return parentPathValue;
     }
 
-    public static String objectPath(String path)
+    public StringValue getBaseNameValue()
+    {
+        return baseNameValue;
+    }
+
+    public StringValue getSrcValue()
+    {
+        return srcValue;
+    }
+
+    public String getSrcParentPath()
+    {
+        return srcParentPath;
+    }
+
+    public String getSrcBaseName()
+    {
+        return srcBaseName;
+    }
+
+    public StringValue getSrcParentPathValue()
+    {
+        return srcParentPathValue;
+    }
+
+    public StringValue getSrcBaseNameValue()
+    {
+        return srcBaseNameValue;
+    }
+
+    // like File.dirname
+    public static String parentPath(String path)
     {
         String[] parts = path.split("\\.");
         StringBuilder builder = new StringBuilder();
@@ -96,7 +148,7 @@ public class JsonColumn
         return builder.toString();
     }
 
-    public static String elementPath(String path)
+    public static String baseName(String path)
     {
         String[] parts = path.split("\\.");
         return parts[parts.length - 1];

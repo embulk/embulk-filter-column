@@ -25,5 +25,6 @@ filters:
       - {name: copy_score, src: score}
       - {name: $.json.foo, type: long, default: 1}
       - {name: $.json.d, type: string, default: "2015-07-13"}
+      - {name: $.json.copy_foo, src: $.json.foo}
 out:
   type: stdout
