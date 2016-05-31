@@ -34,8 +34,8 @@ public class JsonColumn
         this.objectPath = objectPath(name);
         this.elementPath = elementPath(name);
         this.nameValue = ValueFactory.newString(name);
-        this.objectPathValue = ValueFactory.newString(objectPath);
-        this.elementPathValue = ValueFactory.newString(elementPath);
+        this.objectPathValue = ValueFactory.newString(objectPath); // trunk
+        this.elementPathValue = ValueFactory.newString(elementPath); // leaf
     }
 
     public String getName()

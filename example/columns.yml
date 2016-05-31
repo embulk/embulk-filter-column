@@ -1,10 +1,3 @@
-# in:
-#   type: random
-#   rows: 100
-#   schema:
-#     id: primary_key
-#     name: string
-#     score: integer
 in:
   type: file
   path_prefix: example/example.csv

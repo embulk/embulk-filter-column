@@ -19,5 +19,6 @@ filters:
     drop_columns:
       - {name: time }
       - {name: id }
+      - {name: $.json.foo }
 out:
   type: stdout
