@@ -2,6 +2,7 @@ package org.embulk.filter.column;
 
 import org.embulk.config.ConfigException;
 import org.embulk.spi.type.Type;
+import org.msgpack.value.IntegerValue;
 import org.msgpack.value.StringValue;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
@@ -16,12 +17,14 @@ public class JsonColumn
     private StringValue pathValue = null;
     private String parentPath = null;
     private String baseName = null;
+    private Long baseIndex = null;
     private StringValue parentPathValue = null;
     private StringValue baseNameValue = null;
 
     private StringValue srcValue = null;
     private String srcParentPath = null;
     private String srcBaseName = null;
+    private Long srcBaseIndex = null;
     private StringValue srcParentPathValue = null;
     private StringValue srcBaseNameValue = null;
 
@@ -45,12 +48,14 @@ public class JsonColumn
         this.pathValue = ValueFactory.newString(path);
         this.parentPath = parentPath(path);
         this.baseName = baseName(path);
+        this.baseIndex = baseIndex(path);
         this.parentPathValue = ValueFactory.newString(parentPath);
         this.baseNameValue = ValueFactory.newString(baseName);
 
         this.srcValue = ValueFactory.newString(this.src);
         this.srcParentPath = parentPath(this.src);
         this.srcBaseName = baseName(this.src);
+        this.srcBaseIndex = baseIndex(this.src);
         this.srcParentPathValue = ValueFactory.newString(this.srcParentPath);
         this.srcBaseNameValue = ValueFactory.newString(this.srcBaseName);
 
@@ -94,6 +99,11 @@ public class JsonColumn
         return baseName;
     }
 
+    public Long getBaseIndex()
+    {
+        return baseIndex;
+    }
+
     public StringValue getParentPathValue()
     {
         return parentPathValue;
@@ -117,6 +127,11 @@ public class JsonColumn
     public String getSrcBaseName()
     {
         return srcBaseName;
+    }
+
+    public Long getSrcBaseIndex()
+    {
+        return srcBaseIndex;
     }
 
     public StringValue getSrcParentPathValue()
@@ -156,6 +171,23 @@ public class JsonColumn
         }
         else {
             return "[" + arrayParts[arrayParts.length - 1];
+        }
+    }
+
+    public static Long baseIndex(String path)
+    {
+        String baseName = baseName(path);
+        if (baseName.startsWith("[") && baseName.endsWith("]")) {
+            String baseIndex = baseName.substring(1, baseName.length() - 1);
+            try {
+                return Long.parseLong(baseIndex);
+            }
+            catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        else {
+            return null;
         }
     }
 }

@@ -106,7 +106,7 @@ public class ColumnFilterPlugin implements FilterPlugin
         }
     }
 
-    private Schema buildOutputSchema(PluginTask task, Schema inputSchema)
+    static Schema buildOutputSchema(PluginTask task, Schema inputSchema)
     {
         List<ColumnConfig> columns = task.getColumns();
         List<ColumnConfig> addColumns = task.getAddColumns();
