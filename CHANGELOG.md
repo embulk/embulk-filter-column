@@ -1,3 +1,9 @@
+# 0.5.1 (2016-06-03)
+
+Fixes:
+
+* Fix JSONPath support
+
 # 0.5.0 (2016-05-31)
 
 Enhancements:
