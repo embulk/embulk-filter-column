@@ -1,51 +1,29 @@
 package org.embulk.filter.column;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
-import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
 
 import org.embulk.EmbulkTestRuntime;
 import org.embulk.config.ConfigLoader;
 import org.embulk.config.ConfigSource;
-import org.embulk.config.TaskSource;
 import org.embulk.spi.Column;
 import org.embulk.spi.Exec;
-import org.embulk.spi.FileInput;
-import org.embulk.spi.ParserPlugin;
 import org.embulk.spi.Schema;
-import org.embulk.spi.SchemaConfig;
-import org.embulk.spi.type.Type;
-import org.joda.time.DateTimeZone;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-
-import static junit.framework.TestCase.assertFalse;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import org.msgpack.value.MapValue;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
 
-import static org.embulk.spi.type.Types.BOOLEAN;
-import static org.embulk.spi.type.Types.DOUBLE;
 import static org.embulk.spi.type.Types.JSON;
-import static org.embulk.spi.type.Types.LONG;
-import static org.embulk.spi.type.Types.STRING;
-import static org.embulk.spi.type.Types.TIMESTAMP;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 public class TestJsonVisitor {
     @Rule
@@ -54,7 +32,6 @@ public class TestJsonVisitor {
     @Before
     public void createReasource()
     {
-        // config = config().set("type", "column");
     }
 
     private ConfigSource config()
@@ -62,12 +39,7 @@ public class TestJsonVisitor {
         return runtime.getExec().newConfigSource();
     }
 
-    private Schema schema(Column... columns)
-    {
-        return new Schema(Lists.newArrayList(columns));
-    }
-
-    private ConfigSource configFromYamlString(String... lines)
+    private PluginTask taskFromYamlString(String... lines)
     {
         StringBuilder builder = new StringBuilder();
         for (String line : lines) {
@@ -76,12 +48,7 @@ public class TestJsonVisitor {
         String yamlString = builder.toString();
 
         ConfigLoader loader = new ConfigLoader(Exec.getModelManager());
-        return loader.fromYamlString(yamlString);
-    }
-
-    private PluginTask taskFromYamlString(String... lines)
-    {
-        ConfigSource config = configFromYamlString(lines);
+        ConfigSource config = loader.fromYamlString(yamlString);
         return config.loadConfig(PluginTask.class);
     }
 
@@ -102,9 +69,10 @@ public class TestJsonVisitor {
                 "  - {name: \"$.json1.b.b[1].b\", type: string, default: foo}",
                 "drop_columns:",
                 "  - {name: \"$.json1.c.c[*].c\"}");
-        Schema inputSchema = schema(
-                new Column(0, "json1", JSON),
-                new Column(1, "json2", JSON));
+        Schema inputSchema = Schema.builder()
+                .add("json1", JSON)
+                .add("json2", JSON)
+                .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
         assertTrue(subject.shouldVisit("$.json1.a.a.a"));
@@ -131,9 +99,10 @@ public class TestJsonVisitor {
                 "  - {name: $.json1.a.default}",
                 "  - {name: $.json1.a.copy}",
                 "  - {name: \"$.json1.a.copy_array[1]\"}");
-        Schema inputSchema = schema(
-                new Column(0, "json1", JSON),
-                new Column(1, "json2", JSON));
+        Schema inputSchema = Schema.builder()
+                .add("json1", JSON)
+                .add("json2", JSON)
+                .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
         assertFalse(subject.jsonDropColumns.containsKey("$.json1"));
@@ -163,9 +132,10 @@ public class TestJsonVisitor {
                 "  - {name: $.json1.a.default, type: string, default: foo}",
                 "  - {name: $.json1.a.copy, src: $.json1.a.src}",
                 "  - {name: \"$.json1.a.copy_array[1]\", src: \"$.json1.a.copy_array[0]\"}");
-        Schema inputSchema = schema(
-                new Column(0, "json1", JSON),
-                new Column(1, "json2", JSON));
+        Schema inputSchema = Schema.builder()
+                .add("json1", JSON)
+                .add("json2", JSON)
+                .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
         assertFalse(subject.jsonAddColumns.containsKey("$.json1"));
@@ -202,9 +172,10 @@ public class TestJsonVisitor {
                 "  - {name: $.json1.a.default, type: string, default: foo}",
                 "  - {name: $.json1.a.copy, src: $.json1.a.src}",
                 "  - {name: \"$.json1.a.copy_array[1]\", src: \"$.json1.a.copy_array[0]\"}");
-        Schema inputSchema = schema(
-                new Column(0, "json1", JSON),
-                new Column(1, "json2", JSON));
+        Schema inputSchema = Schema.builder()
+                .add("json1", JSON)
+                .add("json2", JSON)
+                .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
         assertFalse(subject.jsonColumns.containsKey("$.json1"));
@@ -242,9 +213,10 @@ public class TestJsonVisitor {
                 "  - {name: $.json1.a.copy, src: $.json1.a.src}",
                 "columns:",
                 "  - {name: \"$.json1.a.copy_array[1]\", src: \"$.json1.a.copy_array[0]\"}");
-        Schema inputSchema = schema(
-                new Column(0, "json1", JSON),
-                new Column(1, "json2", JSON));
+        Schema inputSchema = Schema.builder()
+                .add("json1", JSON)
+                .add("json2", JSON)
+                .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
         assertFalse(subject.jsonDropColumns.isEmpty());
@@ -259,9 +231,10 @@ public class TestJsonVisitor {
                 "drop_columns:",
                 "  - {name: $.json1.k1.k1}",
                 "  - {name: $.json1.k2}");
-        Schema inputSchema = schema(
-                new Column(0, "json1", JSON),
-                new Column(1, "json2", JSON));
+        Schema inputSchema = Schema.builder()
+                .add("json1", JSON)
+                .add("json2", JSON)
+                .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
         // {"k1":{"k1":"v"},"k2":{"k2":"v"}}
@@ -284,9 +257,10 @@ public class TestJsonVisitor {
                 "  - {name: $.json1.k3, type: json, default: \"{}\"}",
                 "  - {name: $.json1.k3.k3, type: string, default: v}",
                 "  - {name: $.json1.k4, src: $.json1.k2}");
-        Schema inputSchema = schema(
-                new Column(0, "json1", JSON),
-                new Column(1, "json2", JSON));
+        Schema inputSchema = Schema.builder()
+                .add("json1", JSON)
+                .add("json2", JSON)
+                .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
         // {"k1":{"k1":"v"},"k2":{"k2":"v"}}
@@ -311,9 +285,10 @@ public class TestJsonVisitor {
                 "  - {name: $.json1.k3, type: json, default: \"{}\"}",
                 "  - {name: $.json1.k3.k3, type: string, default: v}",
                 "  - {name: $.json1.k4, src: $.json1.k2}");
-        Schema inputSchema = schema(
-                new Column(0, "json1", JSON),
-                new Column(1, "json2", JSON));
+        Schema inputSchema = Schema.builder()
+                .add("json1", JSON)
+                .add("json2", JSON)
+                .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
         // {"k1":{"k1":"v"},"k2":{"k1":"v","k2":"v"}}
@@ -335,9 +310,10 @@ public class TestJsonVisitor {
                 "drop_columns:",
                 "  - {name: \"$.json1.k1[0].k1\"}",
                 "  - {name: \"$.json1.k2[*]\"}");
-        Schema inputSchema = schema(
-                new Column(0, "json1", JSON),
-                new Column(1, "json2", JSON));
+        Schema inputSchema = Schema.builder()
+                .add("json1", JSON)
+                .add("json2", JSON)
+                .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
         // {"k1":[{"k1":"v"}[,"k2":["v","v"]}
@@ -361,9 +337,10 @@ public class TestJsonVisitor {
                 "  - {name: \"$.json1.k3\", type: json, default: \"[]\"}",
                 "  - {name: \"$.json1.k3[0]\", type: json, default: \"{}\"}",
                 "  - {name: \"$.json1.k3[0].k3\", type: string, default: v}");
-        Schema inputSchema = schema(
-                new Column(0, "json1", JSON),
-                new Column(1, "json2", JSON));
+        Schema inputSchema = Schema.builder()
+                .add("json1", JSON)
+                .add("json2", JSON)
+                .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
         // {"k1":[{"k1":"v"}],"k2":["v","v"]}
@@ -389,9 +366,10 @@ public class TestJsonVisitor {
                 "  - {name: \"$.json1.k3\", type: json, default: \"[]\"}",
                 "  - {name: \"$.json1.k3[0]\", type: json, default: \"{}\"}",
                 "  - {name: \"$.json1.k3[0].k3\", type: string, default: v}");
-        Schema inputSchema = schema(
-                new Column(0, "json1", JSON),
-                new Column(1, "json2", JSON));
+        Schema inputSchema = Schema.builder()
+                .add("json1", JSON)
+                .add("json2", JSON)
+                .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
         // {"k1":[{"k1":"v"},"v"],"k2":["v","v"]}
