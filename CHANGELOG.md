@@ -1,3 +1,9 @@
+# 0.5.2 (2016-06-07)
+
+Fixes:
+
+* Fix add_columns for type: json with default to work
+
 # 0.5.1 (2016-06-03)
 
 Fixes:
