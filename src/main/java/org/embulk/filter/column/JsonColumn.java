@@ -2,7 +2,6 @@ package org.embulk.filter.column;
 
 import org.embulk.config.ConfigException;
 import org.embulk.spi.type.Type;
-import org.msgpack.value.IntegerValue;
 import org.msgpack.value.StringValue;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;

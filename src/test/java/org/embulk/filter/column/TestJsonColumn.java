@@ -1,15 +1,15 @@
 package org.embulk.filter.column;
 
+import org.embulk.spi.type.Types;
 import org.junit.Test;
+import org.msgpack.value.Value;
+import org.msgpack.value.ValueFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.embulk.spi.type.Types;
-import org.msgpack.value.Value;
-import org.msgpack.value.ValueFactory;
-
-public class TestJsonColumn {
+public class TestJsonColumn
+{
     @Test
     public void initialize()
     {

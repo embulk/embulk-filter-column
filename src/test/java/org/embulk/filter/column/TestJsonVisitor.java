@@ -1,18 +1,14 @@
 package org.embulk.filter.column;
 
-import com.google.common.collect.Lists;
-import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
-
 import org.embulk.EmbulkTestRuntime;
 import org.embulk.config.ConfigLoader;
 import org.embulk.config.ConfigSource;
-import org.embulk.spi.Column;
+import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
 import org.embulk.spi.Exec;
 import org.embulk.spi.Schema;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-
 import org.msgpack.value.MapValue;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
@@ -25,7 +21,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class TestJsonVisitor {
+public class TestJsonVisitor
+{
     @Rule
     public EmbulkTestRuntime runtime = new EmbulkTestRuntime();
 
@@ -204,7 +201,8 @@ public class TestJsonVisitor {
     }
 
     @Test
-    public void buildJsonSchema_Mix() {
+    public void buildJsonSchema_Mix()
+    {
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "drop_columns:",
@@ -225,7 +223,8 @@ public class TestJsonVisitor {
     }
 
     @Test
-    public void visitMap_DropColumns() {
+    public void visitMap_DropColumns()
+    {
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "drop_columns:",
@@ -250,7 +249,8 @@ public class TestJsonVisitor {
     }
 
     @Test
-    public void visitMap_AddColumns() {
+    public void visitMap_AddColumns()
+    {
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "add_columns:",
@@ -276,7 +276,8 @@ public class TestJsonVisitor {
     }
 
     @Test
-    public void visitMap_Columns() {
+    public void visitMap_Columns()
+    {
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "columns:",
@@ -304,7 +305,8 @@ public class TestJsonVisitor {
     }
 
     @Test
-    public void visitArray_DropColumns() {
+    public void visitArray_DropColumns()
+    {
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "drop_columns:",
@@ -329,7 +331,8 @@ public class TestJsonVisitor {
     }
 
     @Test
-    public void visitArray_AddColumns() {
+    public void visitArray_AddColumns()
+    {
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "add_columns:",
@@ -356,7 +359,8 @@ public class TestJsonVisitor {
     }
 
     @Test
-    public void visitArray_Columns() {
+    public void visitArray_Columns()
+    {
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "columns:",

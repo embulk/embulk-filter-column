@@ -1,10 +1,9 @@
 package org.embulk.filter.column;
 
-import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
-
 import org.embulk.EmbulkTestRuntime;
 import org.embulk.config.ConfigLoader;
 import org.embulk.config.ConfigSource;
+import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
 import org.embulk.spi.Exec;
 import org.embulk.spi.Page;
 import org.embulk.spi.PageBuilder;
@@ -23,14 +22,14 @@ import static org.embulk.spi.type.Types.BOOLEAN;
 import static org.embulk.spi.type.Types.DOUBLE;
 import static org.embulk.spi.type.Types.JSON;
 import static org.embulk.spi.type.Types.LONG;
+import static org.embulk.spi.type.Types.STRING;
 import static org.embulk.spi.type.Types.TIMESTAMP;
 import static org.junit.Assert.assertEquals;
 
-import static org.embulk.spi.type.Types.STRING;
-
 import java.util.List;
 
-public class TestColumnVisitorImpl {
+public class TestColumnVisitorImpl
+{
     @Rule
     public EmbulkTestRuntime runtime = new EmbulkTestRuntime();
 
@@ -290,5 +289,4 @@ public class TestColumnVisitorImpl {
             assertEquals("src", record[1]);
         }
     }
-
 }

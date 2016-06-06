@@ -159,10 +159,24 @@ $ ./gradlew test jacocoTestReport
 
 open build/reports/jacoco/test/html/index.html
 
-Run checkstyle:
+Run checkstyle and findbugs:
 
 ```
 $ ./gradlew check
+```
+
+Run only checkstyle:
+
+```
+$ ./gradlew checkstyleMain
+$ ./gradlew checkstyleTest
+```
+
+Run only findbugs:
+
+```
+$ ./gradlew findbugsMain
+$ ./gradlew findbugsTest
 ```
 
 Release gem:

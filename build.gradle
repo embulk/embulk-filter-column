@@ -4,6 +4,7 @@ plugins {
     id "java"
     id "checkstyle"
     id "jacoco"
+    id "findbugs"
 }
 import com.github.jrubygradle.JRubyExec
 repositories {
