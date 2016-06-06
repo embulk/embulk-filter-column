@@ -121,9 +121,9 @@ $.payload.array[*]
 
 EXAMPLE:
 
-* [example/json_columns.yml](example/json_columns.yml)
-* [example/json_add_columns.yml](example/json_add_columns.yml)
-* [example/json_drop_columns.yml](example/json_drop_columns.yml)
+* [example/columns.yml](example/columns.yml)
+* [example/add_columns.yml](example/add_columns.yml)
+* [example/drop_columns.yml](example/drop_columns.yml)
 
 NOTE:
 
