@@ -1,3 +1,9 @@
+# 0.5.3 (2016-06-21)
+
+Changes:
+
+* Remove parameter requirements that one of columns or add_columns or drop_columns are required
+
 # 0.5.2 (2016-06-07)
 
 Fixes:
