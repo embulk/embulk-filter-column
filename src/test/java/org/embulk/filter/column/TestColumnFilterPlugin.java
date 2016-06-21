@@ -165,18 +165,6 @@ public class TestColumnFilterPlugin
     }
 
     @Test(expected = ConfigException.class)
-    public void configure_OneOfColumnsOrDropColumnsOrAddColumnsAreRequired()
-    {
-        ConfigSource config = configFromYamlString(
-                "type: column");
-        Schema inputSchema = schema(
-                new Column(0, "a", STRING),
-                new Column(1, "b", STRING));
-
-        transaction(config, inputSchema);
-    }
-
-    @Test(expected = ConfigException.class)
     public void configure_EitherOfColumnsOrDropColumnsCanBeSpecified()
     {
         ConfigSource config = configFromYamlString(
