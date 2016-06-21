@@ -97,10 +97,6 @@ public class ColumnFilterPlugin implements FilterPlugin
         List<ColumnConfig> addColumns = task.getAddColumns();
         List<ColumnConfig> dropColumns = task.getDropColumns();
 
-        if (columns.size() == 0 && addColumns.size() == 0 && dropColumns.size() == 0) {
-            throw new ConfigException("One of \"columns\", \"add_columns\", \"drop_columns\" must be specified.");
-        }
-
         if (columns.size() > 0 && dropColumns.size() > 0) {
             throw new ConfigException("Either of \"columns\", \"drop_columns\" can be specified.");
         }
