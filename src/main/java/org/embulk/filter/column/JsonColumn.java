@@ -47,6 +47,9 @@ public class JsonColumn
         this.pathValue = ValueFactory.newString(path);
         this.parentPath = parentPath(path);
         this.baseName = baseName(path);
+        if (this.baseName.equals("[*]")) {
+            throw new ConfigException(String.format("%s wrongly ends with [*], perhaps you can remove the [*]", path));
+        }
         this.baseIndex = baseIndex(path);
         this.parentPathValue = ValueFactory.newString(parentPath);
         this.baseNameValue = ValueFactory.newString(baseName);
