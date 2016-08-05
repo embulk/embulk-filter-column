@@ -1,5 +1,6 @@
 package org.embulk.filter.column;
 
+import org.embulk.config.ConfigException;
 import org.embulk.EmbulkTestRuntime;
 import org.embulk.config.ConfigLoader;
 import org.embulk.config.ConfigSource;
@@ -53,6 +54,18 @@ public class TestJsonVisitor
     {
         Schema outputSchema = ColumnFilterPlugin.buildOutputSchema(task, inputSchema);
         return new JsonVisitor(task, inputSchema, outputSchema);
+    }
+
+    @Test(expected = ConfigException.class)
+    public void configException_Columns()
+    {
+        PluginTask task = taskFromYamlString(
+                "type: column",
+                "columns:",
+                "  - {name: \"$.json1.b.b[*]\"}");
+        Schema inputSchema = Schema.builder().build();
+        // b[*] should be written as b
+        jsonVisitor(task, inputSchema);
     }
 
     @Test
@@ -311,7 +324,7 @@ public class TestJsonVisitor
                 "type: column",
                 "drop_columns:",
                 "  - {name: \"$.json1.k1[0].k1\"}",
-                "  - {name: \"$.json1.k2[*]\"}");
+                "  - {name: \"$.json1.k2\"}");
         Schema inputSchema = Schema.builder()
                 .add("json1", JSON)
                 .add("json2", JSON)
