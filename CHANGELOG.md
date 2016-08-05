@@ -1,3 +1,9 @@
+# 0.5.4 (2016-08-05)
+
+Enhancements: 
+
+* raise ConfigException if json path ends with `[*]` (columns and add_columns)
+
 # 0.5.3 (2016-06-21)
 
 Changes:
