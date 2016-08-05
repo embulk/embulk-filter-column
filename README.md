@@ -128,9 +128,33 @@ EXAMPLE:
 NOTE:
 
 * JSONPath syntax is not fully supported
-* Embulk's type: json cannot have timestamp column, so `type: timesatmp` for `add_columns` or `columns` with default is not available
-* `src` (to rename or copy columns) for `add_columns` or `columns` is only partially supported yet
-  * the json path directory must be same, for example, `{name: $.foo.copy, src: $foo.bar}` works, but `{name: $foo.copy, src: $.bar.baz}` does not work
+* `type: timesatmp` for `add_columns` or `columns` is not available because Embulk's `type: json` cannot have timestamp column
+
+NOTE:
+
+To deeply visit json path such as `$.payload.foo.bar`, you have to write its upper paths together like:
+
+```
+- (name: $.payload.foo}
+- {name: $.payload.foo.bar}
+```
+
+NOTE:
+
+`src` (to rename or copy columns) is only partially supported yet. The upper json path must be same like:
+
+```
+- {name: $.payload.foo}
+- {name: $.payload.foo.dest, src: $.payload.foo.src}
+```
+
+Below does not work yet.
+
+```
+- {name: $.payload.foo}
+- {name: $.payload.bar}
+- {name: $.payload.foo.dest, src: $.payload.bar.src}
+```
 
 ## ToDo
 
