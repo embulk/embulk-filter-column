@@ -114,9 +114,9 @@ C40P5H1WcBx-aWFDJCI8th6QPEI2DOUgupt_gB8UutE,7323
 For type: json column, you can specify [JSONPath](http://goessner.net/articles/JsonPath/) for column's name as:
 
 ```
-$.payload.key1
-$.payload.array[0]
-$.payload.array[*]
+- {name: $.payload.key1}
+- {name: "$.payload.array[0]"}
+- {name: "$.payload.array[*]"}
 ```
 
 EXAMPLE:
