@@ -324,7 +324,7 @@ public class TestJsonVisitor
                 "type: column",
                 "drop_columns:",
                 "  - {name: \"$.json1.k1[0].k1\"}",
-                "  - {name: \"$.json1.k2\"}");
+                "  - {name: \"$.json1.k2[*]\"}"); // ending with [*] is allowed for drop_columns, but not for others
         Schema inputSchema = Schema.builder()
                 .add("json1", JSON)
                 .add("json2", JSON)
