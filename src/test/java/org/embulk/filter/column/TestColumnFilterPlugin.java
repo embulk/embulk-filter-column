@@ -32,7 +32,7 @@ public class TestColumnFilterPlugin
     private ColumnFilterPlugin plugin;
 
     @Before
-    public void createReasource()
+    public void createResource()
     {
         plugin = new ColumnFilterPlugin();
     }

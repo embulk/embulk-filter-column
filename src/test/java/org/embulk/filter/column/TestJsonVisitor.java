@@ -28,7 +28,7 @@ public class TestJsonVisitor
     public EmbulkTestRuntime runtime = new EmbulkTestRuntime();
 
     @Before
-    public void createReasource()
+    public void createResource()
     {
     }
 

@@ -34,7 +34,7 @@ public class TestColumnVisitorImpl
     public EmbulkTestRuntime runtime = new EmbulkTestRuntime();
 
     @Before
-    public void createReasource()
+    public void createResource()
     {
     }
 
