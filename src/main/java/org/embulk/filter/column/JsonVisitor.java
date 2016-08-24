@@ -238,14 +238,14 @@ public class JsonVisitor
         }
         else if (this.jsonColumns.containsKey(rootPath)) {
             for (JsonColumn jsonColumn : this.jsonColumns.get(rootPath).values()) {
-                int src = jsonColumn.getSrcBaseIndex().intValue();
+                int src = jsonColumn.getSrcTailIndex().intValue();
                 Value v = (src < arrayValue.size() ? arrayValue.get(src) : null);
                 if (v == null) {
                     v = jsonColumn.getDefaultValue();
                 }
                 String newPath = jsonColumn.getPath();
                 Value visited = visit(newPath, v);
-                // int i = jsonColumn.getBaseIndex().intValue();
+                // int i = jsonColumn.getTailIndex().intValue();
                 // index is shifted, so j++ is used.
                 newValue.add(j++, visited == null ? ValueFactory.newNil() : visited);
             }
@@ -259,7 +259,7 @@ public class JsonVisitor
         }
         if (this.jsonAddColumns.containsKey(rootPath)) {
             for (JsonColumn jsonColumn : this.jsonAddColumns.get(rootPath).values()) {
-                int src = jsonColumn.getSrcBaseIndex().intValue();
+                int src = jsonColumn.getSrcTailIndex().intValue();
                 Value v = (src < arrayValue.size() ? arrayValue.get(src) : null);
                 if (v == null) {
                     v = jsonColumn.getDefaultValue();
@@ -294,14 +294,14 @@ public class JsonVisitor
         else if (this.jsonColumns.containsKey(rootPath)) {
             Map<Value, Value> map = mapValue.map();
             for (JsonColumn jsonColumn : this.jsonColumns.get(rootPath).values()) {
-                Value src = jsonColumn.getSrcBaseNameValue();
+                Value src = jsonColumn.getSrcTailNameValue();
                 Value v = map.get(src);
                 if (v == null) {
                     v = jsonColumn.getDefaultValue();
                 }
                 String newPath = jsonColumn.getPath();
                 Value visited = visit(newPath, v);
-                newValue.add(i++, jsonColumn.getBaseNameValue());
+                newValue.add(i++, jsonColumn.getTailNameValue());
                 newValue.add(i++, visited == null ? ValueFactory.newNil() : visited);
             }
         }
@@ -318,14 +318,14 @@ public class JsonVisitor
         if (this.jsonAddColumns.containsKey(rootPath)) {
             Map<Value, Value> map = mapValue.map();
             for (JsonColumn jsonColumn : this.jsonAddColumns.get(rootPath).values()) {
-                Value src = jsonColumn.getSrcBaseNameValue();
+                Value src = jsonColumn.getSrcTailNameValue();
                 Value v = map.get(src);
                 if (v == null) {
                     v = jsonColumn.getDefaultValue();
                 }
                 String newPath = jsonColumn.getPath();
                 Value visited = visit(newPath, v);
-                newValue.add(i++, jsonColumn.getBaseNameValue());
+                newValue.add(i++, jsonColumn.getTailNameValue());
                 newValue.add(i++, visited == null ? ValueFactory.newNil() : visited);
             }
         }

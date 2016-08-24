@@ -25,7 +25,7 @@ public class CompiledPath extends PathToken
 
     public int getTokenCount() { return tokenCount; }
 
-    public Long baseIndex()
+    public Long tailIndex()
     {
         if (tail instanceof ArrayPathToken) {
             return ((ArrayPathToken) tail).index().longValue();

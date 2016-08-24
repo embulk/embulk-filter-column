@@ -45,35 +45,35 @@ public class TestJsonColumn
     }
 
     @Test
-    public void baseName()
+    public void tailName()
     {
-        assertEquals("['baz']", JsonColumn.baseName("$['foo'].bar.baz"));
-        assertEquals("['bar']", JsonColumn.baseName("$.foo.bar"));
-        assertEquals("['foo']", JsonColumn.baseName("$.foo"));
-        assertEquals("[1]", JsonColumn.baseName("$.foo[0][1]"));
-        assertEquals("[0]", JsonColumn.baseName("$.foo[0]"));
-        assertEquals("[0]", JsonColumn.baseName("$[0]"));
+        assertEquals("['baz']", JsonColumn.tailName("$['foo'].bar.baz"));
+        assertEquals("['bar']", JsonColumn.tailName("$.foo.bar"));
+        assertEquals("['foo']", JsonColumn.tailName("$.foo"));
+        assertEquals("[1]", JsonColumn.tailName("$.foo[0][1]"));
+        assertEquals("[0]", JsonColumn.tailName("$.foo[0]"));
+        assertEquals("[0]", JsonColumn.tailName("$[0]"));
     }
 
     @Test
-    public void getBaseNameValue()
+    public void getTailNameValue()
     {
-        assertEquals("baz", new JsonColumn("$['foo'].bar.baz", Types.BOOLEAN).getBaseNameValue().toString());
-        assertEquals("bar", new JsonColumn("$.foo.bar", Types.BOOLEAN).getBaseNameValue().toString());
-        assertEquals("foo", new JsonColumn("$.foo", Types.BOOLEAN).getBaseNameValue().toString());
-        assertEquals("[1]", new JsonColumn("$.foo[0][1]", Types.BOOLEAN).getBaseNameValue().toString());
-        assertEquals("[0]", new JsonColumn("$.foo[0]", Types.BOOLEAN).getBaseNameValue().toString());
-        assertEquals("[0]", new JsonColumn("$[0]", Types.BOOLEAN).getBaseNameValue().toString());
+        assertEquals("baz", new JsonColumn("$['foo'].bar.baz", Types.BOOLEAN).getTailNameValue().toString());
+        assertEquals("bar", new JsonColumn("$.foo.bar", Types.BOOLEAN).getTailNameValue().toString());
+        assertEquals("foo", new JsonColumn("$.foo", Types.BOOLEAN).getTailNameValue().toString());
+        assertEquals("[1]", new JsonColumn("$.foo[0][1]", Types.BOOLEAN).getTailNameValue().toString());
+        assertEquals("[0]", new JsonColumn("$.foo[0]", Types.BOOLEAN).getTailNameValue().toString());
+        assertEquals("[0]", new JsonColumn("$[0]", Types.BOOLEAN).getTailNameValue().toString());
     }
 
     @Test
-    public void baseIndex()
+    public void tailIndex()
     {
-        assertEquals(null, JsonColumn.baseIndex("$['foo'].bar.baz"));
-        assertEquals(null, JsonColumn.baseIndex("$.foo.bar"));
-        assertEquals(null, JsonColumn.baseIndex("$.foo"));
-        assertEquals(new Long(1), JsonColumn.baseIndex("$.foo[0][1]"));
-        assertEquals(new Long(0), JsonColumn.baseIndex("$.foo[0]"));
-        assertEquals(new Long(0), JsonColumn.baseIndex("$[0]"));
+        assertEquals(null, JsonColumn.tailIndex("$['foo'].bar.baz"));
+        assertEquals(null, JsonColumn.tailIndex("$.foo.bar"));
+        assertEquals(null, JsonColumn.tailIndex("$.foo"));
+        assertEquals(new Long(1), JsonColumn.tailIndex("$.foo[0][1]"));
+        assertEquals(new Long(0), JsonColumn.tailIndex("$.foo[0]"));
+        assertEquals(new Long(0), JsonColumn.tailIndex("$[0]"));
     }
 }

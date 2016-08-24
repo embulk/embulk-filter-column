@@ -20,17 +20,15 @@ public class JsonColumn
 
     private StringValue pathValue = null;
     private String parentPath = null;
-    private String baseName = null;
-    private Long baseIndex = null;
+    private Long tailIndex = null;
     private StringValue parentPathValue = null;
-    private StringValue baseNameValue = null;
+    private StringValue tailNameValue = null;
 
     private StringValue srcValue = null;
     private String srcParentPath = null;
-    private String srcBaseName = null;
-    private Long srcBaseIndex = null;
+    private Long srcTailIndex = null;
     private StringValue srcParentPathValue = null;
-    private StringValue srcBaseNameValue = null;
+    private StringValue srcTailNameValue = null;
 
     public JsonColumn(String path, Type type)
     {
@@ -53,33 +51,33 @@ public class JsonColumn
 
         this.pathValue = ValueFactory.newString(path);
         this.parentPath = compiledPath.getParentPath();
-        this.baseName = compiledPath.getTailPath();
-        if (this.baseName.equals("[*]")) {
+        if (compiledPath.getTailPath().equals("[*]")) {
             throw new ConfigException(String.format("%s wrongly ends with [*], perhaps you can remove the [*]", path));
         }
-        this.baseIndex = compiledPath.baseIndex();
+        this.tailIndex = compiledPath.tailIndex();
         this.parentPathValue = ValueFactory.newString(parentPath);
-        String baseName = getPropertyOrBaseName(compiledPath, this.baseName);
-        this.baseNameValue = ValueFactory.newString(baseName);
+        String tailName = getTailName(compiledPath);
+        this.tailNameValue = ValueFactory.newString(tailName);
 
         this.srcValue = ValueFactory.newString(this.src);
         this.srcParentPath = compiledSrc.getParentPath();
-        this.srcBaseName = compiledSrc.getTailPath();
-        this.srcBaseIndex = compiledSrc.baseIndex();
+        this.srcTailIndex = compiledSrc.tailIndex();
         this.srcParentPathValue = ValueFactory.newString(this.srcParentPath);
-        String srcBaseName = getPropertyOrBaseName(compiledSrc, this.srcBaseName);
-        this.srcBaseNameValue = ValueFactory.newString(srcBaseName);
+        String srcTailName = getTailName(compiledSrc);
+        this.srcTailNameValue = ValueFactory.newString(srcTailName);
 
         if (! srcParentPath.equals(parentPath)) {
             throw new ConfigException(String.format("The branch (parent path) of src \"%s\" must be same with of name \"%s\" yet", src, path));
         }
     }
 
-    private String getPropertyOrBaseName(CompiledPath path, String baseName) {
+    // $['foo'] or $.foo => foo
+    // $['foo'][0] or $.foo[0] => [0]
+    private String getTailName(CompiledPath path) {
       if (path.getTail() instanceof PropertyPathToken) {
           return ((PropertyPathToken) path.getTail()).getProperty();
       } else {
-          return baseName;
+          return path.getTailPath();
       }
     }
 
@@ -113,14 +111,9 @@ public class JsonColumn
         return parentPath;
     }
 
-    public String getBaseName()
+    public Long getTailIndex()
     {
-        return baseName;
-    }
-
-    public Long getBaseIndex()
-    {
-        return baseIndex;
+        return tailIndex;
     }
 
     public StringValue getParentPathValue()
@@ -128,9 +121,9 @@ public class JsonColumn
         return parentPathValue;
     }
 
-    public StringValue getBaseNameValue()
+    public StringValue getTailNameValue()
     {
-        return baseNameValue;
+        return tailNameValue;
     }
 
     public StringValue getSrcValue()
@@ -143,14 +136,9 @@ public class JsonColumn
         return srcParentPath;
     }
 
-    public String getSrcBaseName()
+    public Long getSrcTailIndex()
     {
-        return srcBaseName;
-    }
-
-    public Long getSrcBaseIndex()
-    {
-        return srcBaseIndex;
+        return srcTailIndex;
     }
 
     public StringValue getSrcParentPathValue()
@@ -158,9 +146,9 @@ public class JsonColumn
         return srcParentPathValue;
     }
 
-    public StringValue getSrcBaseNameValue()
+    public StringValue getSrcTailNameValue()
     {
-        return srcBaseNameValue;
+        return srcTailNameValue;
     }
 
     // like File.dirname
@@ -169,12 +157,12 @@ public class JsonColumn
         return PathCompiler.compile(path).getParentPath();
     }
 
-    public static String baseName(String path)
+    public static String tailName(String path)
     {
         return PathCompiler.compile(path).getTailPath();
     }
 
-    public static Long baseIndex(String path)
+    public static Long tailIndex(String path)
     {
         PathToken pathToken = PathCompiler.compile(path).getTail();
         if (pathToken instanceof ArrayPathToken) {
