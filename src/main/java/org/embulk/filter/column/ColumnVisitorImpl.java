@@ -244,13 +244,13 @@ public class ColumnVisitorImpl implements ColumnVisitor
                 pageBuilder.setNull(outputColumn);
             }
             else {
-                String jsonPath = new StringBuilder("$.").append(outputColumn.getName()).toString();
+                String jsonPath = new StringBuilder("$['").append(outputColumn.getName()).append("']").toString();
                 pageBuilder.setJson(outputColumn, jsonVisitor.visit(jsonPath, defaultValue));
             }
         }
         else {
             Value value = pageReader.getJson(inputColumn);
-            String jsonPath = new StringBuilder("$.").append(outputColumn.getName()).toString();
+            String jsonPath = new StringBuilder("$['").append(outputColumn.getName()).append("']").toString();
             pageBuilder.setJson(outputColumn, jsonVisitor.visit(jsonPath, value));
         }
     }

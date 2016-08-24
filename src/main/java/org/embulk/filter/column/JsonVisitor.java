@@ -4,6 +4,9 @@ import org.embulk.config.ConfigException;
 import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
 
+import org.embulk.filter.column.path.CompiledPath;
+import org.embulk.filter.column.path.PathCompiler;
+import org.embulk.filter.column.path.PathToken;
 import org.embulk.spi.Exec;
 import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfigException;
@@ -80,29 +83,32 @@ public class JsonVisitor
 
     private void jsonColumnsPut(String path, JsonColumn value)
     {
-        String parentPath = JsonColumn.parentPath(path);
+        CompiledPath compiledPath = PathCompiler.compile(path);
+        String parentPath = compiledPath.getParentPath();
         if (! jsonColumns.containsKey(parentPath)) {
             jsonColumns.put(parentPath, new LinkedHashMap<String, JsonColumn>());
         }
-        jsonColumns.get(parentPath).put(path, value);
+        jsonColumns.get(parentPath).put(compiledPath.toString(), value);
     }
 
     private void jsonAddColumnsPut(String path, JsonColumn value)
     {
-        String parentPath = JsonColumn.parentPath(path);
+        CompiledPath compiledPath = PathCompiler.compile(path);
+        String parentPath = compiledPath.getParentPath();
         if (! jsonAddColumns.containsKey(parentPath)) {
             jsonAddColumns.put(parentPath, new LinkedHashMap<String, JsonColumn>());
         }
-        jsonAddColumns.get(parentPath).put(path, value);
+        jsonAddColumns.get(parentPath).put(compiledPath.toString(), value);
     }
 
     private void jsonDropColumnsPut(String path)
     {
-        String parentPath = JsonColumn.parentPath(path);
+        CompiledPath compiledPath = PathCompiler.compile(path);
+        String parentPath = compiledPath.getParentPath();
         if (! jsonDropColumns.containsKey(parentPath)) {
             jsonDropColumns.put(parentPath, new HashSet<String>());
         }
-        jsonDropColumns.get(parentPath).add(path);
+        jsonDropColumns.get(parentPath).add(compiledPath.toString());
     }
 
     // build jsonColumns, jsonAddColumns, and jsonDropColumns
@@ -117,7 +123,7 @@ public class JsonVisitor
             for (ColumnConfig dropColumn : dropColumns) {
                 String name = dropColumn.getName();
                 // skip NON json path notation to build output schema
-                if (! name.startsWith("$.")) {
+                if (! PathCompiler.isJsonPathNotation(dropColumn.getName())) {
                     continue;
                 }
                 jsonDropColumnsPut(name);
@@ -127,7 +133,7 @@ public class JsonVisitor
             for (ColumnConfig column : columns) {
                 String name = column.getName();
                 // skip NON json path notation to build output schema
-                if (! name.startsWith("$.")) {
+                if (! PathCompiler.isJsonPathNotation(column.getName())) {
                     continue;
                 }
                 if (column.getSrc().isPresent()) {
@@ -151,7 +157,7 @@ public class JsonVisitor
             for (ColumnConfig column : addColumns) {
                 String name = column.getName();
                 // skip NON json path notation to build output schema
-                if (! name.startsWith("$.")) {
+                if (! PathCompiler.isJsonPathNotation(column.getName())) {
                     continue;
                 }
                 if (column.getSrc().isPresent()) {
@@ -179,26 +185,17 @@ public class JsonVisitor
 
         for (ColumnConfig columnConfig : columnConfigs) {
             String name = columnConfig.getName();
-            if (!name.startsWith("$.")) {
+            if (!PathCompiler.isJsonPathNotation(columnConfig.getName())) {
                 continue;
             }
-            String[] parts = name.split("\\.");
+            CompiledPath compiledPath = PathCompiler.compile(name);
+            int count = compiledPath.getTokenCount();
             StringBuilder partialPath = new StringBuilder("$");
-            for (int i = 1; i < parts.length; i++) {
-                if (parts[i].contains("[")) {
-                    String[] arrayParts = parts[i].split("\\[");
-                    partialPath.append(".").append(arrayParts[0]);
-                    this.shouldVisitSet.add(partialPath.toString());
-                    for (int j = 1; j < arrayParts.length; j++) {
-                        // Simply add [0] or [*] here
-                        partialPath.append("[").append(arrayParts[j]);
-                        this.shouldVisitSet.add(partialPath.toString());
-                    }
-                }
-                else {
-                    partialPath.append(".").append(parts[i]);
-                    this.shouldVisitSet.add(partialPath.toString());
-                }
+            PathToken parts = compiledPath;
+            for (int i = 1; i < count; i++) {
+                parts = parts.next();
+                partialPath.append(parts.getPathFragment().toString());
+                this.shouldVisitSet.add(partialPath.toString());
             }
         }
     }
@@ -220,7 +217,7 @@ public class JsonVisitor
     String newMapJsonPath(String rootPath, Value elementPathValue)
     {
         String elementPath = elementPathValue.asStringValue().asString();
-        String newPath = new StringBuilder(rootPath).append(".").append(elementPath).toString();
+        String newPath = new StringBuilder(rootPath).append("['").append(elementPath).append("']").toString();
         return newPath;
     }
 
