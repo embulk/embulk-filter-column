@@ -312,7 +312,7 @@ public class PathCompiler
                 if (inProperty && !inEscape) {
                     endPosition = readPosition;
                     String prop = path.subSequence(startPosition, endPosition).toString();
-                    property = unescape(prop);
+                    property = Utils.unescape(prop);
                     inProperty = false;
                 } else {
                     startPosition = readPosition + 1;
@@ -335,81 +335,6 @@ public class PathCompiler
         appender.appendPathToken(PathTokenFactory.createPropertyPathToken(property, SINGLE_QUOTE));
 
         return path.currentIsTail() || readNextToken(appender);
-    }
-
-    public static String unescape(String str)
-    {
-        if (str == null) {
-            return null;
-        }
-        int len = str.length();
-        StringWriter writer = new StringWriter(len);
-        StringBuffer unicode = new StringBuffer(4);
-        boolean hadSlash = false;
-        boolean inUnicode = false;
-        for (int i = 0; i < len; i++) {
-            char ch = str.charAt(i);
-            if (inUnicode) {
-                unicode.append(ch);
-                if (unicode.length() == 4) {
-                    try {
-                        int value = Integer.parseInt(unicode.toString(), 16);
-                        writer.write((char) value);
-                        unicode.setLength(0);
-                        inUnicode = false;
-                        hadSlash = false;
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidPathException("Unable to parse unicode value: " + unicode, nfe);
-                    }
-                }
-                continue;
-            }
-            if (hadSlash) {
-                hadSlash = false;
-                switch (ch) {
-                    case '\\':
-                        writer.write('\\');
-                        break;
-                    case '\'':
-                        writer.write('\'');
-                        break;
-                    case '\"':
-                        writer.write('"');
-                        break;
-                    case 'r':
-                        writer.write('\r');
-                        break;
-                    case 'f':
-                        writer.write('\f');
-                        break;
-                    case 't':
-                        writer.write('\t');
-                        break;
-                    case 'n':
-                        writer.write('\n');
-                        break;
-                    case 'b':
-                        writer.write('\b');
-                        break;
-                    case 'u': {
-                        inUnicode = true;
-                        break;
-                    }
-                    default:
-                        writer.write(ch);
-                        break;
-                }
-                continue;
-            } else if (ch == '\\') {
-                hadSlash = true;
-                continue;
-            }
-            writer.write(ch);
-        }
-        if (hadSlash) {
-            writer.write('\\');
-        }
-        return writer.toString();
     }
 
     public static boolean fail(String message)
