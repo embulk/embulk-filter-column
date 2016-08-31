@@ -22,13 +22,13 @@ public class JsonColumn
     private String parentPath = null;
     private Long tailIndex = null;
     private StringValue parentPathValue = null;
-    private StringValue tailNameValue = null;
+    private Value tailNameValue = null;
 
     private StringValue srcValue = null;
     private String srcParentPath = null;
     private Long srcTailIndex = null;
     private StringValue srcParentPathValue = null;
-    private StringValue srcTailNameValue = null;
+    private Value srcTailNameValue = null;
 
     public JsonColumn(String path, Type type)
     {
@@ -57,14 +57,14 @@ public class JsonColumn
         this.tailIndex = compiledPath.tailIndex();
         this.parentPathValue = ValueFactory.newString(parentPath);
         String tailName = getTailName(compiledPath);
-        this.tailNameValue = ValueFactory.newString(tailName);
+        this.tailNameValue = tailName == null ? ValueFactory.newNil() : ValueFactory.newString(tailName);
 
         this.srcValue = ValueFactory.newString(this.src);
         this.srcParentPath = compiledSrc.getParentPath();
         this.srcTailIndex = compiledSrc.tailIndex();
         this.srcParentPathValue = ValueFactory.newString(this.srcParentPath);
         String srcTailName = getTailName(compiledSrc);
-        this.srcTailNameValue = ValueFactory.newString(srcTailName);
+        this.srcTailNameValue = srcTailName == null ? ValueFactory.newNil() : ValueFactory.newString(srcTailName);
 
         if (! srcParentPath.equals(parentPath)) {
             throw new ConfigException(String.format("The branch (parent path) of src \"%s\" must be same with of name \"%s\" yet", src, path));
@@ -72,12 +72,12 @@ public class JsonColumn
     }
 
     // $['foo'] or $.foo => foo
-    // $['foo'][0] or $.foo[0] => [0]
+    // $['foo'][0] or $.foo[0] or $['foo'][*] or $.foo[*] => null
     private String getTailName(CompiledPath path) {
       if (path.getTail() instanceof PropertyPathToken) {
           return ((PropertyPathToken) path.getTail()).getProperty();
       } else {
-          return path.getTailPath();
+          return null;
       }
     }
 
@@ -121,7 +121,7 @@ public class JsonColumn
         return parentPathValue;
     }
 
-    public StringValue getTailNameValue()
+    public Value getTailNameValue()
     {
         return tailNameValue;
     }
@@ -146,7 +146,7 @@ public class JsonColumn
         return srcParentPathValue;
     }
 
-    public StringValue getSrcTailNameValue()
+    public Value getSrcTailNameValue()
     {
         return srcTailNameValue;
     }

@@ -58,12 +58,12 @@ public class TestJsonColumn
     @Test
     public void getTailNameValue()
     {
-        assertEquals("baz", new JsonColumn("$['foo'].bar.baz", Types.BOOLEAN).getTailNameValue().toString());
-        assertEquals("bar", new JsonColumn("$.foo.bar", Types.BOOLEAN).getTailNameValue().toString());
-        assertEquals("foo", new JsonColumn("$.foo", Types.BOOLEAN).getTailNameValue().toString());
-        assertEquals("[1]", new JsonColumn("$.foo[0][1]", Types.BOOLEAN).getTailNameValue().toString());
-        assertEquals("[0]", new JsonColumn("$.foo[0]", Types.BOOLEAN).getTailNameValue().toString());
-        assertEquals("[0]", new JsonColumn("$[0]", Types.BOOLEAN).getTailNameValue().toString());
+        assertEquals(ValueFactory.newString("baz"), new JsonColumn("$['foo'].bar.baz", Types.BOOLEAN).getTailNameValue());
+        assertEquals(ValueFactory.newString("bar"), new JsonColumn("$.foo.bar", Types.BOOLEAN).getTailNameValue());
+        assertEquals(ValueFactory.newString("foo"), new JsonColumn("$.foo", Types.BOOLEAN).getTailNameValue());
+        assertEquals(ValueFactory.newNil(), new JsonColumn("$.foo[0][1]", Types.BOOLEAN).getTailNameValue());
+        assertEquals(ValueFactory.newNil(), new JsonColumn("$.foo[0]", Types.BOOLEAN).getTailNameValue());
+        assertEquals(ValueFactory.newNil(), new JsonColumn("$[0]", Types.BOOLEAN).getTailNameValue());
     }
 
     @Test
