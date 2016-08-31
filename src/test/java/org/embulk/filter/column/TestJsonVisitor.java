@@ -659,25 +659,19 @@ public class TestJsonVisitor
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "columns:",
-                " - {name: '$[\"''json1\"][\"k_1\"]', src: '$[\"''json1\"][\"k.1\"]'}",
-                " - {name: '$[\"''json1\"][\"k_1\"][0][\"k_1\"]', src: '$[\"''json1\"][\"k_1\"][0][\"k.1\"]'}",
-                " - {name: '$[\"''json1\"][\"k_2\"]', src: '$[\"''json1\"][\"k.2\"]'}",
-                " - {name: '$[\"''json1\"][\"k_2\"][\"k_2\"]', src: '$[\"''json1\"][\"k_2\"][\"k.2\"]'}");
+                " - {name: \"$[\\\"'json1\\\"]['k1']\"}");
         Schema inputSchema = Schema.builder()
                 .add("'json1", JSON)
                 .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
-        // {"k.1":[{"k.1":"v"}], "k.2":{"k.2":"v"}}
-        Value k1 = ValueFactory.newString("k.1");
-        Value k2 = ValueFactory.newString("k.2");
+        // {"k1":"v"}
+        Value k1 = ValueFactory.newString("k1");
         Value v = ValueFactory.newString("v");
-        Value map = ValueFactory.newMap(
-                k1, ValueFactory.newArray(ValueFactory.newMap(k1, v)),
-                k2, ValueFactory.newMap(k2, v));
+        Value map = ValueFactory.newMap(k1, v);
 
-        MapValue visited = subject.visit("$[''json1']", map).asMapValue();
-        assertEquals("{\"k_1\":[{\"k_1\":\"v\"}],\"k_2\":{\"k_2\":\"v\"}}", visited.toString());
+        MapValue visited = subject.visit("$['\\'json1']", map).asMapValue();
+        assertEquals("{\"k1\":\"v\"}", visited.toString());
     }
 
     @Test

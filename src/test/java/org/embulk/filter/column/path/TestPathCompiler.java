@@ -57,8 +57,8 @@ public class TestPathCompiler
     public void compile_Escaped()
     {
         // double quotes converted to single quotes internally
-        assertEquals("$['foo\'bar']", PathCompiler.compile("$[\"foo\\\'bar\"]").toString());
-        assertEquals("$['foo\"bar']", PathCompiler.compile("$['foo\\\"bar']").toString());
+        assertEquals("$['foo\\'bar']", PathCompiler.compile("$[\"foo\\\'bar\"]").toString());
+        assertEquals("$['foo\\\"bar']", PathCompiler.compile("$['foo\\\"bar']").toString());
     }
 
     @Test

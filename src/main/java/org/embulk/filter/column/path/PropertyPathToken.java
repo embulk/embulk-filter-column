@@ -23,7 +23,7 @@ public class PropertyPathToken extends PathToken
         return new StringBuilder()
                 .append("[")
                 .append(stringDelimiter)
-                .append(property)
+                .append(Utils.escape(property, true))
                 .append(stringDelimiter)
                 .append("]").toString();
     }
