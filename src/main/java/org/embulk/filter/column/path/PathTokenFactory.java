@@ -8,9 +8,9 @@ public class PathTokenFactory
         return new CompiledPath(token);
     }
 
-    public static PathToken createPropertyPathToken(String property, char stringDelimiter)
+    public static PathToken createPropertyPathToken(String property, boolean singleQuote)
     {
-        return new PropertyPathToken(property, stringDelimiter);
+        return new PropertyPathToken(property, singleQuote);
     }
 
     public static PathToken createIndexArrayPathToken(final Integer index)

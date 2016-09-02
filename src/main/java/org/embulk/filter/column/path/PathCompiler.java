@@ -166,7 +166,7 @@ public class PathCompiler
 
         String property = path.subSequence(startPosition, endPosition).toString();
 
-        appender.appendPathToken(PathTokenFactory.createPropertyPathToken(property, SINGLE_QUOTE));
+        appender.appendPathToken(PathTokenFactory.createPropertyPathToken(property, true));
 
         return path.currentIsTail() || readNextToken(appender);
     }
@@ -317,7 +317,7 @@ public class PathCompiler
 
         path.setPosition(endBracketIndex);
 
-        appender.appendPathToken(PathTokenFactory.createPropertyPathToken(property, SINGLE_QUOTE));
+        appender.appendPathToken(PathTokenFactory.createPropertyPathToken(property, true));
 
         return path.currentIsTail() || readNextToken(appender);
     }

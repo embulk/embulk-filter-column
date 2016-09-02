@@ -1,18 +1,23 @@
 package org.embulk.filter.column.path;
+import static org.embulk.filter.column.path.PathConstants.SINGLE_QUOTE;
+import static org.embulk.filter.column.path.PathConstants.DOUBLE_QUOTE;
 
 public class PropertyPathToken extends PathToken
 {
 
     private final String property;
     private final String stringDelimiter;
+    private final boolean singleQuote;
 
-    public PropertyPathToken(String property, char stringDelimiter)
+    // singleQuote ? "'" : "\""
+    public PropertyPathToken(String property, boolean singleQuote)
     {
         if (property.isEmpty()) {
             throw new InvalidPathException("Empty property");
         }
         this.property = property;
-        this.stringDelimiter = Character.toString(stringDelimiter);
+        this.stringDelimiter = singleQuote ? Character.toString(SINGLE_QUOTE) : Character.toString(DOUBLE_QUOTE);
+        this.singleQuote = singleQuote;
     }
 
     public String getProperty() { return property; }
@@ -23,7 +28,7 @@ public class PropertyPathToken extends PathToken
         return new StringBuilder()
                 .append("[")
                 .append(stringDelimiter)
-                .append(Utils.escape(property, true))
+                .append(Utils.escape(property, singleQuote))
                 .append(stringDelimiter)
                 .append("]").toString();
     }

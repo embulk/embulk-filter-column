@@ -10,6 +10,6 @@ public class TestPropertyPathToken
     @Test
     public void createPropetyPathToken()
     {
-        assertEquals("['json']", PathTokenFactory.createPropertyPathToken("json", '\'').toString());
+        assertEquals("['json']", PathTokenFactory.createPropertyPathToken("json", true).toString());
     }
 }
