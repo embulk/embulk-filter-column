@@ -13,26 +13,11 @@ package org.embulk.filter.column.path;
     - ArraySliceOperation (ex. $.json1[1:2] (start:end))
  */
 
+import static org.embulk.filter.column.path.PathConstants.*;
 import static java.lang.Character.isDigit;
 
 public class PathCompiler
 {
-
-
-    private static final char DOC_CONTEXT = '$';
-
-    private static final char OPEN_SQUARE_BRACKET = '[';
-    private static final char CLOSE_SQUARE_BRACKET = ']';
-
-    private static final char WILDCARD = '*';
-    private static final char PERIOD = '.';
-    private static final char SPACE = ' ';
-    private static final char TAB = '\t';
-    private static final char CR = '\r';
-    private static final char LF = '\r';
-    private static final char MINUS = '-';
-    private static final char SINGLE_QUOTE = '\'';
-    private static final char DOUBLE_QUOTE = '"';
 
     private final CharacterIndex path;
 
