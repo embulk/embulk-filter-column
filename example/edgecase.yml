@@ -1,0 +1,22 @@
+in:
+  type: file
+  path_prefix: example/edgecase.tsv
+  parser:
+    type: csv
+    delimiter: \t
+    charset: UTF-8
+    newline: CRLF
+    null_string: 'NULL'
+    skip_header_lines: 1
+    comment_line_marker: '#'
+    columns:
+      - {name: json, type: json}
+filters:
+  - type: column
+    columns:
+      - {name: json, default: "{\"phone']Num\\\"]ber\":\"FOO\"}"}
+      - {name: "$.json[\"phone']Num\\\"]ber\"]"}
+      - {name: $.json.copy_foo, src: "$.json[\"phone']Num\\\"]ber\"]"}
+      - {name: "$.json['foo\\']\"]foo']"}
+out:
+  type: stdout

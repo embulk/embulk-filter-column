@@ -10,6 +10,7 @@ import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
 import org.embulk.config.TaskSource;
 
+import org.embulk.filter.column.path.PathCompiler;
 import org.embulk.spi.Column;
 import org.embulk.spi.Exec;
 import org.embulk.spi.FilterPlugin;
@@ -36,7 +37,7 @@ public class ColumnFilterPlugin implements FilterPlugin
     }
 
     // NOTE: This is not spi.ColumnConfig
-    interface ColumnConfig extends Task
+    public interface ColumnConfig extends Task
     {
         @Config("name")
         public String getName();
@@ -62,7 +63,7 @@ public class ColumnFilterPlugin implements FilterPlugin
         public Optional<String> getSrc();
     }
 
-    interface PluginTask extends Task, TimestampParser.Task
+    public interface PluginTask extends Task, TimestampParser.Task
     {
         @Config("columns")
         @ConfigDefault("[]")
@@ -117,7 +118,7 @@ public class ColumnFilterPlugin implements FilterPlugin
                 boolean matched = false;
                 for (ColumnConfig dropColumn : dropColumns) {
                     // skip json path notation to build outputSchema
-                    if (dropColumn.getName().startsWith("$.")) {
+                    if (PathCompiler.isJsonPathNotation(dropColumn.getName())) {
                         continue;
                     }
                     if (dropColumn.getName().equals(name)) {
@@ -134,10 +135,10 @@ public class ColumnFilterPlugin implements FilterPlugin
         else if (columns.size() > 0) {
             for (ColumnConfig column : columns) {
                 // skip json path notation to build output schema
-                if (column.getName().startsWith("$.")) {
+                if (PathCompiler.isJsonPathNotation(column.getName())) {
                     continue;
                 }
-                if (column.getSrc().isPresent() && column.getSrc().get().startsWith("$.")) {
+                if (column.getSrc().isPresent() && PathCompiler.isJsonPathNotation(column.getSrc().get())) {
                     continue;
                 }
 
@@ -178,7 +179,7 @@ public class ColumnFilterPlugin implements FilterPlugin
         if (addColumns.size() > 0) {
             for (ColumnConfig column : addColumns) {
                 // skip json path notation to build output schema
-                if (column.getName().startsWith("$.")) {
+                if (PathCompiler.isJsonPathNotation(column.getName())) {
                     continue;
                 }
                 if (column.getSrc().isPresent() && column.getSrc().get().startsWith("$.")) {
