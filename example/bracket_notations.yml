@@ -1,0 +1,40 @@
+in:
+  type: file
+  path_prefix: example/example.csv
+  parser:
+    type: csv
+    charset: UTF-8
+    newline: CRLF
+    null_string: 'NULL'
+    skip_header_lines: 1
+    comment_line_marker: '#'
+    columns:
+      - {name: time,  type: timestamp, format: "%Y-%m-%d"}
+      - {name: id, type: long}
+      - {name: name, type: string}
+      - {name: score, type: double}
+      - {name: json, type: json}
+filters:
+  - type: column
+    add_columns:
+      - {name: "$['json']['array.a']", type: json, default: "[{\"a\":\"a0\"},{\"a\":\"a1\"}]"}
+      - {name: "$['json']['array_b']", type: json, default: "[{\"b\":\"b\"},{\"b\":\"b\"}]"}
+  - type: column
+    columns:
+      - {name: time, default: "2015-07-13", format: "%Y-%m-%d"}
+      - {name: name, default: "foo"}
+      - {name: foo,  default: 1, type: long}
+      - {name: id}
+      - {name: copy_score, src: score}
+      - {name: json, default: "{\"foo\":\"FOO\",\"array.a\":[{\"a\":\"default0\"},{\"a\":\"default1\"}],\"array_b\":[{\"b\":\"default\"},{\"b\":\"default\"}]}"}
+      - {name: "$['json']['foo']"}
+      - {name: "$['json']['copy_foo']", src: "$['json']['foo']"}
+      - {name: "$['json']['drop_foo']", src: "$['json']['foo']"}
+      - {name: "$['json']['array_a']", src: "$['json']['array.a']"}
+      - {name: "$['json']['array_a'][0]"}
+      - {name: "$['json']['array_b']"}
+  - type: column
+    drop_columns:
+      - {name: "$['json']['drop_foo']"}
+out:
+  type: stdout

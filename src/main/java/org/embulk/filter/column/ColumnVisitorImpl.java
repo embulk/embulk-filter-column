@@ -1,5 +1,6 @@
 package org.embulk.filter.column;
 
+import com.github.kysnm.jsonpathcompiler.internal.Utils;
 import com.google.common.base.Throwables;
 
 import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;
@@ -244,13 +245,13 @@ public class ColumnVisitorImpl implements ColumnVisitor
                 pageBuilder.setNull(outputColumn);
             }
             else {
-                String jsonPath = new StringBuilder("$.").append(outputColumn.getName()).toString();
+                String jsonPath = new StringBuilder("$['").append(Utils.escape(outputColumn.getName(), true)).append("']").toString();
                 pageBuilder.setJson(outputColumn, jsonVisitor.visit(jsonPath, defaultValue));
             }
         }
         else {
             Value value = pageReader.getJson(inputColumn);
-            String jsonPath = new StringBuilder("$.").append(outputColumn.getName()).toString();
+            String jsonPath = new StringBuilder("$['").append(Utils.escape(outputColumn.getName(), true)).append("']").toString();
             pageBuilder.setJson(outputColumn, jsonVisitor.visit(jsonPath, value));
         }
     }

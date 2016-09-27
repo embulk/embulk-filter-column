@@ -1,5 +1,6 @@
 package org.embulk.filter.column;
 
+import com.github.kysnm.jsonpathcompiler.internal.Path;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
@@ -26,6 +27,8 @@ import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 
 import java.util.List;
+
+import com.github.kysnm.jsonpathcompiler.internal.path.PathCompiler;
 
 public class ColumnFilterPlugin implements FilterPlugin
 {
@@ -117,7 +120,7 @@ public class ColumnFilterPlugin implements FilterPlugin
                 boolean matched = false;
                 for (ColumnConfig dropColumn : dropColumns) {
                     // skip json path notation to build outputSchema
-                    if (dropColumn.getName().startsWith("$.")) {
+                    if (PathCompiler.isDocContext(dropColumn.getName())) {
                         continue;
                     }
                     if (dropColumn.getName().equals(name)) {
@@ -134,10 +137,10 @@ public class ColumnFilterPlugin implements FilterPlugin
         else if (columns.size() > 0) {
             for (ColumnConfig column : columns) {
                 // skip json path notation to build output schema
-                if (column.getName().startsWith("$.")) {
+                if (PathCompiler.isDocContext(column.getName())) {
                     continue;
                 }
-                if (column.getSrc().isPresent() && column.getSrc().get().startsWith("$.")) {
+                if (column.getSrc().isPresent() && PathCompiler.isDocContext(column.getSrc().get())) {
                     continue;
                 }
 
@@ -178,7 +181,7 @@ public class ColumnFilterPlugin implements FilterPlugin
         if (addColumns.size() > 0) {
             for (ColumnConfig column : addColumns) {
                 // skip json path notation to build output schema
-                if (column.getName().startsWith("$.")) {
+                if (PathCompiler.isDocContext(column.getName())) {
                     continue;
                 }
                 if (column.getSrc().isPresent() && column.getSrc().get().startsWith("$.")) {
