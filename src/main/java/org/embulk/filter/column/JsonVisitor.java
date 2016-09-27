@@ -1,11 +1,8 @@
 package org.embulk.filter.column;
 
-import com.github.kysnm.jsonpathcompiler.internal.Path;
-import com.github.kysnm.jsonpathcompiler.internal.path.FunctionPathToken;
-import com.github.kysnm.jsonpathcompiler.internal.path.PathCompiler;
-import com.github.kysnm.jsonpathcompiler.internal.path.PathToken;
-import com.github.kysnm.jsonpathcompiler.internal.path.PredicatePathToken;
-import com.github.kysnm.jsonpathcompiler.internal.path.ScanPathToken;
+import com.github.kysnm.jsonpathcompiler.expressions.Path;
+import com.github.kysnm.jsonpathcompiler.expressions.path.PathCompiler;
+import com.github.kysnm.jsonpathcompiler.expressions.path.PathToken;
 import org.embulk.config.ConfigException;
 import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
@@ -126,7 +123,7 @@ public class JsonVisitor
             for (ColumnConfig dropColumn : dropColumns) {
                 String name = dropColumn.getName();
                 // skip NON json path notation to build output schema
-                if (! PathCompiler.isDocContext(name)) {
+                if (! PathCompiler.isStartsWithDoller(name)) {
                     continue;
                 }
                 jsonDropColumnsPut(name);
@@ -136,7 +133,7 @@ public class JsonVisitor
             for (ColumnConfig column : columns) {
                 String name = column.getName();
                 // skip NON json path notation to build output schema
-                if (! PathCompiler.isDocContext(name)) {
+                if (! PathCompiler.isStartsWithDoller(name)) {
                     continue;
                 }
                 if (column.getSrc().isPresent()) {
@@ -160,7 +157,7 @@ public class JsonVisitor
             for (ColumnConfig column : addColumns) {
                 String name = column.getName();
                 // skip NON json path notation to build output schema
-                if (! PathCompiler.isDocContext(name)) {
+                if (! PathCompiler.isStartsWithDoller(name)) {
                     continue;
                 }
                 if (column.getSrc().isPresent()) {
@@ -188,7 +185,7 @@ public class JsonVisitor
 
         for (ColumnConfig columnConfig : columnConfigs) {
             String name = columnConfig.getName();
-            if (!PathCompiler.isDocContext(name)) {
+            if (!PathCompiler.isStartsWithDoller(name)) {
                 continue;
             }
             Path path = PathCompiler.compile(name);

@@ -1,6 +1,6 @@
 package org.embulk.filter.column;
 
-import com.github.kysnm.jsonpathcompiler.internal.Utils;
+import com.github.kysnm.jsonpathcompiler.expressions.Utils;
 import com.google.common.base.Throwables;
 
 import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;

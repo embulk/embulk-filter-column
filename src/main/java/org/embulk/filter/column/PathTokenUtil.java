@@ -1,11 +1,11 @@
 package org.embulk.filter.column;
 
-import com.github.kysnm.jsonpathcompiler.internal.path.ArrayIndexOperation;
-import com.github.kysnm.jsonpathcompiler.internal.path.ArrayPathToken;
-import com.github.kysnm.jsonpathcompiler.internal.path.FunctionPathToken;
-import com.github.kysnm.jsonpathcompiler.internal.path.PathToken;
-import com.github.kysnm.jsonpathcompiler.internal.path.PredicatePathToken;
-import com.github.kysnm.jsonpathcompiler.internal.path.ScanPathToken;
+import com.github.kysnm.jsonpathcompiler.expressions.path.ArrayIndexOperation;
+import com.github.kysnm.jsonpathcompiler.expressions.path.ArrayPathToken;
+import com.github.kysnm.jsonpathcompiler.expressions.path.FunctionPathToken;
+import com.github.kysnm.jsonpathcompiler.expressions.path.PathToken;
+import com.github.kysnm.jsonpathcompiler.expressions.path.PredicatePathToken;
+import com.github.kysnm.jsonpathcompiler.expressions.path.ScanPathToken;
 import org.embulk.config.ConfigException;
 
 public class PathTokenUtil
