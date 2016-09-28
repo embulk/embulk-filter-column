@@ -86,7 +86,8 @@ public class JsonColumn
                 throw new ConfigException(String.format("Multiple property is not supported \"%s\"", root.toString()));
             }
             return ((PropertyPathToken) pathToken).getProperties().get(0);
-        } else {
+        }
+        else {
             return null;
         }
     }
@@ -98,7 +99,8 @@ public class JsonColumn
             ArrayIndexOperation arrayIndexOperation = ((ArrayPathToken) tail).getArrayIndexOperation();
             PathTokenUtil.assertSupportedArrayPathToken(arrayIndexOperation, path);
             return arrayIndexOperation.indexes().get(0).longValue();
-        } else {
+        }
+        else {
             return null;
         }
     }
@@ -193,12 +195,14 @@ public class JsonColumn
             if (arrayIndexOperation == null) {
                 throw new ConfigException(String.format("Array Slice Operation is not supported \"%s\"", path));
             }
-            if (arrayIndexOperation.isSingleIndexOperation())
+            if (arrayIndexOperation.isSingleIndexOperation()) {
                 return arrayIndexOperation.indexes().get(0).longValue();
+            }
             else {
                 throw new ConfigException(String.format("Multi Array Indexes is not supported \"%s\"", path));
             }
-        } else {
+        }
+        else {
             return null;
         }
     }

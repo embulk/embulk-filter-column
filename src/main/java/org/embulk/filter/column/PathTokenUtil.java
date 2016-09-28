@@ -15,11 +15,14 @@ public class PathTokenUtil
         if (pathToken instanceof ArrayPathToken) {
             ArrayIndexOperation arrayIndexOperation = ((ArrayPathToken) pathToken).getArrayIndexOperation();
             assertSupportedArrayPathToken(arrayIndexOperation, path);
-        } else if (pathToken instanceof ScanPathToken) {
+        }
+        else if (pathToken instanceof ScanPathToken) {
             throw new ConfigException(String.format("scan is not supported \"%s\"", path));
-        } else if (pathToken instanceof FunctionPathToken) {
+        }
+        else if (pathToken instanceof FunctionPathToken) {
             throw new ConfigException(String.format("function is not supported \"%s\"", path));
-        } else if (pathToken instanceof PredicatePathToken) {
+        }
+        else if (pathToken instanceof PredicatePathToken) {
             throw new ConfigException(String.format("predicate is not supported \"%s\"", path));
         }
     }
@@ -28,7 +31,8 @@ public class PathTokenUtil
     {
         if (arrayIndexOperation == null) {
             throw new ConfigException(String.format("Array Slice Operation is not supported \"%s\"", path));
-        } else if (!arrayIndexOperation.isSingleIndexOperation()) {
+        }
+        else if (!arrayIndexOperation.isSingleIndexOperation()) {
             throw new ConfigException(String.format("Multi Array Indexes is not supported \"%s\"", path));
         }
     }
