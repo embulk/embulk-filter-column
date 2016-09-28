@@ -17,13 +17,13 @@ public class PathTokenUtil
             assertSupportedArrayPathToken(arrayIndexOperation, path);
         }
         else if (pathToken instanceof ScanPathToken) {
-            throw new ConfigException(String.format("scan is not supported \"%s\"", path));
+            throw new ConfigException(String.format("scan path token is not supported \"%s\"", path));
         }
         else if (pathToken instanceof FunctionPathToken) {
-            throw new ConfigException(String.format("function is not supported \"%s\"", path));
+            throw new ConfigException(String.format("function path token is not supported \"%s\"", path));
         }
         else if (pathToken instanceof PredicatePathToken) {
-            throw new ConfigException(String.format("predicate is not supported \"%s\"", path));
+            throw new ConfigException(String.format("predicate path token is not supported \"%s\"", path));
         }
     }
 
