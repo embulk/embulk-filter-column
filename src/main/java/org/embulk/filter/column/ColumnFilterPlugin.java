@@ -183,7 +183,7 @@ public class ColumnFilterPlugin implements FilterPlugin
                 if (PathCompiler.isStartsWithDoller(column.getName())) {
                     continue;
                 }
-                if (column.getSrc().isPresent() && column.getSrc().get().startsWith("$.")) {
+                if (column.getSrc().isPresent() && PathCompiler.isStartsWithDoller(column.getSrc().get())) {
                     continue;
                 }
 
