@@ -1,12 +1,12 @@
 package org.embulk.filter.column;
 
-import com.github.kysnm.jsonpathcompiler.expressions.Path;
-import com.github.kysnm.jsonpathcompiler.expressions.path.ArrayIndexOperation;
-import com.github.kysnm.jsonpathcompiler.expressions.path.ArrayPathToken;
-import com.github.kysnm.jsonpathcompiler.expressions.path.PathCompiler;
-import com.github.kysnm.jsonpathcompiler.expressions.path.PathToken;
-import com.github.kysnm.jsonpathcompiler.expressions.path.RootPathToken;
-import com.github.kysnm.jsonpathcompiler.expressions.path.PropertyPathToken;
+import com.dena.analytics.jsonpathcompiler.expressions.Path;
+import com.dena.analytics.jsonpathcompiler.expressions.path.ArrayIndexOperation;
+import com.dena.analytics.jsonpathcompiler.expressions.path.ArrayPathToken;
+import com.dena.analytics.jsonpathcompiler.expressions.path.PathCompiler;
+import com.dena.analytics.jsonpathcompiler.expressions.path.PathToken;
+import com.dena.analytics.jsonpathcompiler.expressions.path.RootPathToken;
+import com.dena.analytics.jsonpathcompiler.expressions.path.PropertyPathToken;
 import org.embulk.config.ConfigException;
 import org.embulk.spi.type.Type;
 import org.msgpack.value.StringValue;

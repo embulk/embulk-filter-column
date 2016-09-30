@@ -1,8 +1,8 @@
 package org.embulk.filter.column;
 
-import com.github.kysnm.jsonpathcompiler.expressions.Path;
-import com.github.kysnm.jsonpathcompiler.expressions.path.PathCompiler;
-import com.github.kysnm.jsonpathcompiler.expressions.path.PathToken;
+import com.dena.analytics.jsonpathcompiler.expressions.Path;
+import com.dena.analytics.jsonpathcompiler.expressions.path.PathCompiler;
+import com.dena.analytics.jsonpathcompiler.expressions.path.PathToken;
 import org.embulk.config.ConfigException;
 import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
@@ -123,7 +123,7 @@ public class JsonVisitor
             for (ColumnConfig dropColumn : dropColumns) {
                 String name = dropColumn.getName();
                 // skip NON json path notation to build output schema
-                if (! PathCompiler.isStartsWithDoller(name)) {
+                if (! PathCompiler.isProbablyJsonPath(name)) {
                     continue;
                 }
                 jsonDropColumnsPut(name);
@@ -133,7 +133,7 @@ public class JsonVisitor
             for (ColumnConfig column : columns) {
                 String name = column.getName();
                 // skip NON json path notation to build output schema
-                if (! PathCompiler.isStartsWithDoller(name)) {
+                if (! PathCompiler.isProbablyJsonPath(name)) {
                     continue;
                 }
                 if (column.getSrc().isPresent()) {
@@ -157,7 +157,7 @@ public class JsonVisitor
             for (ColumnConfig column : addColumns) {
                 String name = column.getName();
                 // skip NON json path notation to build output schema
-                if (! PathCompiler.isStartsWithDoller(name)) {
+                if (! PathCompiler.isProbablyJsonPath(name)) {
                     continue;
                 }
                 if (column.getSrc().isPresent()) {
@@ -185,7 +185,7 @@ public class JsonVisitor
 
         for (ColumnConfig columnConfig : columnConfigs) {
             String name = columnConfig.getName();
-            if (!PathCompiler.isStartsWithDoller(name)) {
+            if (!PathCompiler.isProbablyJsonPath(name)) {
                 continue;
             }
             Path path = PathCompiler.compile(name);

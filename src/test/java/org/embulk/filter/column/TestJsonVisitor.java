@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.msgpack.value.MapValue;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
-import com.github.kysnm.jsonpathcompiler.InvalidPathException;
+import com.dena.analytics.jsonpathcompiler.InvalidPathException;
 
 import static org.embulk.spi.type.Types.JSON;
 import static org.junit.Assert.assertEquals;
