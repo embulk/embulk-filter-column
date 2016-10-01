@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 
 import java.util.List;
 
+import com.dena.analytics.jsonpathcompiler.expressions.path.PathCompiler;
+
 public class ColumnFilterPlugin implements FilterPlugin
 {
     private static final Logger logger = Exec.getLogger(ColumnFilterPlugin.class);
@@ -117,7 +119,7 @@ public class ColumnFilterPlugin implements FilterPlugin
                 boolean matched = false;
                 for (ColumnConfig dropColumn : dropColumns) {
                     // skip json path notation to build outputSchema
-                    if (dropColumn.getName().startsWith("$.")) {
+                    if (PathCompiler.isProbablyJsonPath(dropColumn.getName())) {
                         continue;
                     }
                     if (dropColumn.getName().equals(name)) {
@@ -134,10 +136,10 @@ public class ColumnFilterPlugin implements FilterPlugin
         else if (columns.size() > 0) {
             for (ColumnConfig column : columns) {
                 // skip json path notation to build output schema
-                if (column.getName().startsWith("$.")) {
+                if (PathCompiler.isProbablyJsonPath(column.getName())) {
                     continue;
                 }
-                if (column.getSrc().isPresent() && column.getSrc().get().startsWith("$.")) {
+                if (column.getSrc().isPresent() && PathCompiler.isProbablyJsonPath(column.getSrc().get())) {
                     continue;
                 }
 
@@ -178,10 +180,10 @@ public class ColumnFilterPlugin implements FilterPlugin
         if (addColumns.size() > 0) {
             for (ColumnConfig column : addColumns) {
                 // skip json path notation to build output schema
-                if (column.getName().startsWith("$.")) {
+                if (PathCompiler.isProbablyJsonPath(column.getName())) {
                     continue;
                 }
-                if (column.getSrc().isPresent() && column.getSrc().get().startsWith("$.")) {
+                if (column.getSrc().isPresent() && PathCompiler.isProbablyJsonPath(column.getSrc().get())) {
                     continue;
                 }
 

@@ -1,5 +1,12 @@
 package org.embulk.filter.column;
 
+import com.dena.analytics.jsonpathcompiler.expressions.Path;
+import com.dena.analytics.jsonpathcompiler.expressions.path.ArrayIndexOperation;
+import com.dena.analytics.jsonpathcompiler.expressions.path.ArrayPathToken;
+import com.dena.analytics.jsonpathcompiler.expressions.path.PathCompiler;
+import com.dena.analytics.jsonpathcompiler.expressions.path.PathToken;
+import com.dena.analytics.jsonpathcompiler.expressions.path.RootPathToken;
+import com.dena.analytics.jsonpathcompiler.expressions.path.PropertyPathToken;
 import org.embulk.config.ConfigException;
 import org.embulk.spi.type.Type;
 import org.msgpack.value.StringValue;
@@ -15,17 +22,15 @@ public class JsonColumn
 
     private StringValue pathValue = null;
     private String parentPath = null;
-    private String baseName = null;
-    private Long baseIndex = null;
+    private Long tailIndex = null;
     private StringValue parentPathValue = null;
-    private StringValue baseNameValue = null;
+    private Value tailNameValue = null;
 
     private StringValue srcValue = null;
     private String srcParentPath = null;
-    private String srcBaseName = null;
-    private Long srcBaseIndex = null;
+    private Long srcTailIndex = null;
     private StringValue srcParentPathValue = null;
-    private StringValue srcBaseNameValue = null;
+    private Value srcTailNameValue = null;
 
     public JsonColumn(String path, Type type)
     {
@@ -39,30 +44,64 @@ public class JsonColumn
 
     public JsonColumn(String path, Type type, Value defaultValue, String src)
     {
-        this.path = path;
+        Path compiledPath = PathCompiler.compile(path);
+        Path compiledSrc = src == null ? compiledPath : PathCompiler.compile(src);
+        RootPathToken compiledRoot = (RootPathToken) compiledPath.getRoot();
+        RootPathToken compiledSrcRoot = (RootPathToken) compiledSrc.getRoot();
+        this.path = compiledPath.toString();
         this.type = type;
         this.defaultValue = (defaultValue == null ? ValueFactory.newNil() : defaultValue);
-        this.src = (src == null ? path : src);
+        this.src = compiledSrc.toString();
 
         this.pathValue = ValueFactory.newString(path);
-        this.parentPath = parentPath(path);
-        this.baseName = baseName(path);
-        if (this.baseName.equals("[*]")) {
+        this.parentPath = compiledPath.getParentPath();
+
+        if (compiledRoot.getTailPath().equals("[*]")) {
             throw new ConfigException(String.format("%s wrongly ends with [*], perhaps you can remove the [*]", path));
         }
-        this.baseIndex = baseIndex(path);
+        this.tailIndex = tailIndex(compiledRoot);
         this.parentPathValue = ValueFactory.newString(parentPath);
-        this.baseNameValue = ValueFactory.newString(baseName);
+        String tailName = getTailName(compiledRoot);
+        this.tailNameValue = tailName == null ? ValueFactory.newNil() : ValueFactory.newString(tailName);
 
         this.srcValue = ValueFactory.newString(this.src);
-        this.srcParentPath = parentPath(this.src);
-        this.srcBaseName = baseName(this.src);
-        this.srcBaseIndex = baseIndex(this.src);
+        this.srcParentPath = compiledSrc.getParentPath();
+        this.srcTailIndex = tailIndex(compiledSrcRoot);
         this.srcParentPathValue = ValueFactory.newString(this.srcParentPath);
-        this.srcBaseNameValue = ValueFactory.newString(this.srcBaseName);
+        String srcTailName = getTailName(compiledSrcRoot);
+        this.srcTailNameValue = srcTailName == null ? ValueFactory.newNil() : ValueFactory.newString(srcTailName);
 
-        if (! srcParentPath.equals(parentPath)) {
+        if (!srcParentPath.equals(parentPath)) {
             throw new ConfigException(String.format("The branch (parent path) of src \"%s\" must be same with of name \"%s\" yet", src, path));
+        }
+    }
+
+    // $['foo'] or $.foo => foo
+    // $['foo'][0] or $.foo[0] or $['foo'][*] or $.foo[*] => null
+    private String getTailName(RootPathToken root)
+    {
+        PathToken pathToken = root.getTail();
+        if (pathToken instanceof PropertyPathToken) {
+            if (!((PropertyPathToken) pathToken).singlePropertyCase()) {
+                throw new ConfigException(String.format("Multiple property is not supported \"%s\"", root.toString()));
+            }
+            return ((PropertyPathToken) pathToken).getProperties().get(0);
+        }
+        else {
+            return null;
+        }
+    }
+
+    private Long tailIndex(RootPathToken root)
+    {
+        PathToken tail = root.getTail();
+        if (tail instanceof ArrayPathToken) {
+            ArrayIndexOperation arrayIndexOperation = ((ArrayPathToken) tail).getArrayIndexOperation();
+            PathTokenUtil.assertSupportedArrayPathToken(arrayIndexOperation, path);
+            return arrayIndexOperation.indexes().get(0).longValue();
+        }
+        else {
+            return null;
         }
     }
 
@@ -96,14 +135,9 @@ public class JsonColumn
         return parentPath;
     }
 
-    public String getBaseName()
+    public Long tailIndex()
     {
-        return baseName;
-    }
-
-    public Long getBaseIndex()
-    {
-        return baseIndex;
+        return tailIndex;
     }
 
     public StringValue getParentPathValue()
@@ -111,9 +145,9 @@ public class JsonColumn
         return parentPathValue;
     }
 
-    public StringValue getBaseNameValue()
+    public Value getTailNameValue()
     {
-        return baseNameValue;
+        return tailNameValue;
     }
 
     public StringValue getSrcValue()
@@ -126,14 +160,9 @@ public class JsonColumn
         return srcParentPath;
     }
 
-    public String getSrcBaseName()
+    public Long getSrcTailIndex()
     {
-        return srcBaseName;
-    }
-
-    public Long getSrcBaseIndex()
-    {
-        return srcBaseIndex;
+        return srcTailIndex;
     }
 
     public StringValue getSrcParentPathValue()
@@ -141,51 +170,36 @@ public class JsonColumn
         return srcParentPathValue;
     }
 
-    public StringValue getSrcBaseNameValue()
+    public Value getSrcTailNameValue()
     {
-        return srcBaseNameValue;
+        return srcTailNameValue;
     }
 
     // like File.dirname
     public static String parentPath(String path)
     {
-        String[] parts = path.split("\\.");
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < parts.length - 1; i++) {
-            builder.append(".").append(parts[i]);
-        }
-        if (parts[parts.length - 1].contains("[")) {
-            String[] arrayParts = parts[parts.length - 1].split("\\[");
-            builder.append(".").append(arrayParts[0]);
-            for (int j = 1; j < arrayParts.length - 1; j++) {
-                builder.append("[").append(arrayParts[j]);
-            }
-        }
-        return builder.deleteCharAt(0).toString();
+        return PathCompiler.compile(path).getParentPath();
     }
 
-    public static String baseName(String path)
+    public static String tailName(String path)
     {
-        String[] parts = path.split("\\.");
-        String[] arrayParts = parts[parts.length - 1].split("\\[");
-        if (arrayParts.length == 1) { // no [i]
-            return arrayParts[arrayParts.length - 1];
-        }
-        else {
-            return "[" + arrayParts[arrayParts.length - 1];
-        }
+        return ((RootPathToken) PathCompiler.compile(path).getRoot()).getTailPath();
     }
 
-    public static Long baseIndex(String path)
+    public static Long tailIndex(String path)
     {
-        String baseName = baseName(path);
-        if (baseName.startsWith("[") && baseName.endsWith("]")) {
-            String baseIndex = baseName.substring(1, baseName.length() - 1);
-            try {
-                return Long.parseLong(baseIndex);
+        Path compiledPath = PathCompiler.compile(path);
+        PathToken tail = ((RootPathToken) compiledPath.getRoot()).getTail();
+        if (tail instanceof ArrayPathToken) {
+            ArrayIndexOperation arrayIndexOperation = ((ArrayPathToken) tail).getArrayIndexOperation();
+            if (arrayIndexOperation == null) {
+                throw new ConfigException(String.format("Array Slice Operation is not supported \"%s\"", path));
             }
-            catch (NumberFormatException e) {
-                return null;
+            if (arrayIndexOperation.isSingleIndexOperation()) {
+                return arrayIndexOperation.indexes().get(0).longValue();
+            }
+            else {
+                throw new ConfigException(String.format("Multi Array Indexes is not supported \"%s\"", path));
             }
         }
         else {
