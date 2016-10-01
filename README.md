@@ -117,6 +117,7 @@ For type: json column, you can specify [JSONPath](http://goessner.net/articles/J
 - {name: $.payload.key1}
 - {name: "$.payload.array[0]"}
 - {name: "$.payload.array[*]"}
+- {name: $['payload']['key1.key2']}
 ```
 
 EXAMPLE:
