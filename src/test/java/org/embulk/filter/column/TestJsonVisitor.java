@@ -10,6 +10,7 @@ import org.embulk.spi.Schema;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.msgpack.value.MapValue;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
@@ -786,6 +787,25 @@ public class TestJsonVisitor
         Schema inputSchema = Schema.builder()
                 .add("json1", JSON)
                 .build();
+        jsonVisitor(task, inputSchema);
+    }
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
+    @Test
+    public void constructor_mustBeRaisedConfigExceptionEffectively()
+    {
+        PluginTask task = taskFromYamlString(
+                "type: column",
+                "columns:",
+                "- name: \"$['json][''key1']\"");
+        Schema inputSchema = Schema.builder()
+                .add("json1", JSON)
+                .build();
+
+        thrown.expectMessage("path $['json][''key1'], Property must be separated by comma or Property must be terminated close square bracket at index 9");
+
         jsonVisitor(task, inputSchema);
     }
 }
