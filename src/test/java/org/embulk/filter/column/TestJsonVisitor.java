@@ -686,7 +686,7 @@ public class TestJsonVisitor
     }
 
     // It is recognized multi properties if the square brackets does not close properly
-    @Test(expected = InvalidPathException.class)
+    @Test(expected = ConfigException.class)
     public void constructor_mustBeRaisedInvalidPathExceptionWithPropertyIsNotSeparatedByCommas()
     {
         PluginTask task = taskFromYamlString(
