@@ -1,5 +1,6 @@
 package org.embulk.filter.column;
 
+import com.dena.analytics.jsonpathcompiler.InvalidPathException;
 import com.dena.analytics.jsonpathcompiler.expressions.Path;
 import com.dena.analytics.jsonpathcompiler.expressions.path.PathCompiler;
 import com.dena.analytics.jsonpathcompiler.expressions.path.PathToken;
@@ -188,7 +189,12 @@ public class JsonVisitor
             if (!PathCompiler.isProbablyJsonPath(name)) {
                 continue;
             }
-            Path path = PathCompiler.compile(name);
+            Path path;
+            try {
+                path = PathCompiler.compile(name);
+            } catch (InvalidPathException e) {
+                throw new ConfigException(String.format("path %s, %s", name, e.getMessage()));
+            }
             PathToken parts = path.getRoot();
             int count = parts.getTokenCount();
             StringBuilder partialPath = new StringBuilder("$");
