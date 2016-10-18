@@ -8,7 +8,7 @@ import com.dena.analytics.jsonpathcompiler.expressions.path.PredicatePathToken;
 import com.dena.analytics.jsonpathcompiler.expressions.path.ScanPathToken;
 import org.embulk.config.ConfigException;
 
-public class PathTokenUtil
+public class JsonPathTokenUtil
 {
     public static void assertSupportedPathToken(PathToken pathToken, String path)
     {

@@ -201,7 +201,7 @@ public class JsonVisitor
             // skip "$"
             for (int i = 1; i < count; i++) {
                 parts = parts.next();
-                PathTokenUtil.assertSupportedPathToken(parts, name);
+                JsonPathTokenUtil.assertSupportedPathToken(parts, name);
                 partialPath.append(parts.getPathFragment().toString());
                 this.shouldVisitSet.add(partialPath.toString());
             }
