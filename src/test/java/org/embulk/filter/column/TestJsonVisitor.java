@@ -14,7 +14,7 @@ import org.junit.rules.ExpectedException;
 import org.msgpack.value.MapValue;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
-import com.dena.analytics.jsonpathcompiler.InvalidPathException;
+import io.github.medjed.jsonpathcompiler.InvalidPathException;
 
 import static org.embulk.spi.type.Types.JSON;
 import static org.junit.Assert.assertEquals;

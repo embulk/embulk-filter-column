@@ -1,9 +1,9 @@
 package org.embulk.filter.column;
 
-import com.dena.analytics.jsonpathcompiler.InvalidPathException;
-import com.dena.analytics.jsonpathcompiler.expressions.Path;
-import com.dena.analytics.jsonpathcompiler.expressions.path.PathCompiler;
-import com.dena.analytics.jsonpathcompiler.expressions.path.PathToken;
+import io.github.medjed.jsonpathcompiler.InvalidPathException;
+import io.github.medjed.jsonpathcompiler.expressions.Path;
+import io.github.medjed.jsonpathcompiler.expressions.path.PathCompiler;
+import io.github.medjed.jsonpathcompiler.expressions.path.PathToken;
 import org.embulk.config.ConfigException;
 import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;

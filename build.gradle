@@ -22,7 +22,7 @@ targetCompatibility = 1.7
 dependencies {
     compile  "org.embulk:embulk-core:0.8.+"
     provided "org.embulk:embulk-core:0.8.+"
-    compile  'com.dena.analytics:JsonPathCompiler:0.0.6'
+    compile  "io.github.medjed:JsonPathCompiler:0.0.9"
 
     testCompile "junit:junit:4.+"
     testCompile "org.embulk:embulk-core:0.8.+:tests"

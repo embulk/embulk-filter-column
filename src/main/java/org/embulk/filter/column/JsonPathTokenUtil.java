@@ -1,11 +1,11 @@
 package org.embulk.filter.column;
 
-import com.dena.analytics.jsonpathcompiler.expressions.path.ArrayIndexOperation;
-import com.dena.analytics.jsonpathcompiler.expressions.path.ArrayPathToken;
-import com.dena.analytics.jsonpathcompiler.expressions.path.FunctionPathToken;
-import com.dena.analytics.jsonpathcompiler.expressions.path.PathToken;
-import com.dena.analytics.jsonpathcompiler.expressions.path.PredicatePathToken;
-import com.dena.analytics.jsonpathcompiler.expressions.path.ScanPathToken;
+import io.github.medjed.jsonpathcompiler.expressions.path.ArrayIndexOperation;
+import io.github.medjed.jsonpathcompiler.expressions.path.ArrayPathToken;
+import io.github.medjed.jsonpathcompiler.expressions.path.FunctionPathToken;
+import io.github.medjed.jsonpathcompiler.expressions.path.PathToken;
+import io.github.medjed.jsonpathcompiler.expressions.path.PredicatePathToken;
+import io.github.medjed.jsonpathcompiler.expressions.path.ScanPathToken;
 import org.embulk.config.ConfigException;
 
 public class JsonPathTokenUtil

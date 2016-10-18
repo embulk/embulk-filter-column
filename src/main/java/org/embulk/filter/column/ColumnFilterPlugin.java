@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 
 import java.util.List;
 
-import com.dena.analytics.jsonpathcompiler.expressions.path.PathCompiler;
+import io.github.medjed.jsonpathcompiler.expressions.path.PathCompiler;
 
 public class ColumnFilterPlugin implements FilterPlugin
 {
