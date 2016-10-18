@@ -674,7 +674,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void constructor_mustBeRaisedConfigExceptionWithMultiProperties() {
+    public void configException_mustBeRaisedConfigExceptionWithMultiProperties() {
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "columns:",
@@ -687,7 +687,7 @@ public class TestJsonVisitor
 
     // It is recognized multi properties if the square brackets does not close properly
     @Test(expected = ConfigException.class)
-    public void constructor_mustBeRaisedInvalidPathExceptionWithPropertyIsNotSeparatedByCommas()
+    public void configException_mustBeRaisedInvalidPathExceptionWithPropertyIsNotSeparatedByCommas()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -700,7 +700,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void constructor_mustBeRaisedConfigExceptionWithFunctionPathToken()
+    public void configException_mustBeRaisedConfigExceptionWithFunctionPathToken()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -713,7 +713,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void constructor_mustBeRaisedConfigExceptionWithPredicatePathToken()
+    public void configException_mustBeRaisedConfigExceptionWithPredicatePathToken()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -726,7 +726,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void constructor_mustBeRaisedConfigExceptionWithScanPathToken()
+    public void configException_mustBeRaisedConfigExceptionWithScanPathToken()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -739,7 +739,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void constructor_mustBeRaisedConfigExceptionWithMultiIndexOperation()
+    public void configException_mustBeRaisedConfigExceptionWithMultiIndexOperation()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -752,7 +752,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void constructor_mustBeRaisedConfigExceptionWithMultiIndexOperationAtMiddlePosition()
+    public void configException_mustBeRaisedConfigExceptionWithMultiIndexOperationAtMiddlePosition()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -765,7 +765,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void constructor_mustBeRaisedConfigExceptionWithMArraySliceOperation()
+    public void configException_mustBeRaisedConfigExceptionWithMArraySliceOperation()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -778,7 +778,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void constructor_mustBeRaisedConfigExceptionWithMArraySliceOperationAtMiddlePosition()
+    public void configException_mustBeRaisedConfigExceptionWithMArraySliceOperationAtMiddlePosition()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -794,7 +794,7 @@ public class TestJsonVisitor
     public ExpectedException thrown = ExpectedException.none();
 
     @Test
-    public void constructor_mustBeRaisedConfigExceptionEffectively()
+    public void configException_mustBeRaisedConfigExceptionEffectively()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
