@@ -1,10 +1,14 @@
 package org.embulk.filter.column;
 
+import io.github.medjed.jsonpathcompiler.InvalidPathException;
+import io.github.medjed.jsonpathcompiler.expressions.Path;
 import io.github.medjed.jsonpathcompiler.expressions.path.ArrayIndexOperation;
 import io.github.medjed.jsonpathcompiler.expressions.path.ArrayPathToken;
 import io.github.medjed.jsonpathcompiler.expressions.path.FunctionPathToken;
+import io.github.medjed.jsonpathcompiler.expressions.path.PathCompiler;
 import io.github.medjed.jsonpathcompiler.expressions.path.PathToken;
 import io.github.medjed.jsonpathcompiler.expressions.path.PredicatePathToken;
+import io.github.medjed.jsonpathcompiler.expressions.path.RootPathToken;
 import io.github.medjed.jsonpathcompiler.expressions.path.ScanPathToken;
 import org.embulk.config.ConfigException;
 
@@ -34,6 +38,20 @@ public class JsonPathTokenUtil
         }
         else if (!arrayIndexOperation.isSingleIndexOperation()) {
             throw new ConfigException(String.format("Multi Array Indexes is not supported \"%s\"", path));
+        }
+    }
+
+    public static void assertDoNotEndsWithWildcard(String path)
+    {
+        Path compiledPath;
+        try {
+            compiledPath = PathCompiler.compile(path);
+        }
+        catch (InvalidPathException e) {
+            throw new ConfigException(String.format("jsonpath %s, %s", path, e.getMessage()));
+        }
+        if (((RootPathToken) compiledPath.getRoot()).getTailPath().equals("[*]")) {
+            throw new ConfigException(String.format("%s wrongly ends with [*], perhaps you can remove the [*]", compiledPath.toString()));
         }
     }
 }

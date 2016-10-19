@@ -56,9 +56,6 @@ public class JsonColumn
         this.pathValue = ValueFactory.newString(path);
         this.parentPath = compiledPath.getParentPath();
 
-        if (compiledRoot.getTailPath().equals("[*]")) {
-            throw new ConfigException(String.format("%s wrongly ends with [*], perhaps you can remove the [*]", path));
-        }
         this.tailIndex = tailIndex(compiledRoot);
         this.parentPathValue = ValueFactory.newString(parentPath);
         String tailName = getTailName(compiledRoot);

@@ -2,8 +2,10 @@ package org.embulk.filter.column;
 
 import io.github.medjed.jsonpathcompiler.InvalidPathException;
 import io.github.medjed.jsonpathcompiler.expressions.Path;
+import io.github.medjed.jsonpathcompiler.expressions.path.ArrayPathToken;
 import io.github.medjed.jsonpathcompiler.expressions.path.PathCompiler;
 import io.github.medjed.jsonpathcompiler.expressions.path.PathToken;
+import io.github.medjed.jsonpathcompiler.expressions.path.RootPathToken;
 import org.embulk.config.ConfigException;
 import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
@@ -18,6 +20,7 @@ import org.embulk.spi.type.LongType;
 import org.embulk.spi.type.StringType;
 import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
+import org.embulk.spi.type.Types;
 import org.msgpack.value.ArrayValue;
 import org.msgpack.value.MapValue;
 import org.msgpack.value.Value;
@@ -38,9 +41,13 @@ public class JsonVisitor
     final PluginTask task;
     final Schema inputSchema;
     final Schema outputSchema;
+    // jsonpath
     final HashSet<String> shouldVisitSet = new HashSet<>();
+    // parent jsonpath => { jsonpath => json column }
     final HashMap<String, LinkedHashMap<String, JsonColumn>> jsonColumns = new HashMap<>();
+    // parent jsonpath => { jsonpath => json column }
     final HashMap<String, LinkedHashMap<String, JsonColumn>> jsonAddColumns = new HashMap<>();
+    // parent jsonpath => [ jsonpath ]
     final HashMap<String, HashSet<String>> jsonDropColumns = new HashMap<>();
 
     JsonVisitor(PluginTask task, Schema inputSchema, Schema outputSchema)
@@ -92,6 +99,18 @@ public class JsonVisitor
         jsonColumns.get(parentPath).put(compiledPath.toString(), value);
     }
 
+    private boolean jsonColumnsContainsKey(String path)
+    {
+        Path compiledPath = PathCompiler.compile(path);
+        String parentPath = compiledPath.getParentPath();
+        if (jsonColumns.containsKey(parentPath)) {
+            return jsonColumns.get(parentPath).containsKey(compiledPath.toString());
+        }
+        else {
+            return false;
+        }
+    }
+
     private void jsonAddColumnsPut(String path, JsonColumn value)
     {
         Path compiledPath = PathCompiler.compile(path);
@@ -100,6 +119,18 @@ public class JsonVisitor
             jsonAddColumns.put(parentPath, new LinkedHashMap<String, JsonColumn>());
         }
         jsonAddColumns.get(parentPath).put(compiledPath.toString(), value);
+    }
+
+    private boolean jsonAddColumnsContainsKey(String path)
+    {
+        Path compiledPath = PathCompiler.compile(path);
+        String parentPath = compiledPath.getParentPath();
+        if (jsonAddColumns.containsKey(parentPath)) {
+            return jsonAddColumns.get(parentPath).containsKey(compiledPath.toString());
+        }
+        else {
+            return false;
+        }
     }
 
     private void jsonDropColumnsPut(String path)
@@ -112,68 +143,98 @@ public class JsonVisitor
         jsonDropColumns.get(parentPath).add(compiledPath.toString());
     }
 
+    private void buildJsonColumns()
+    {
+        List<ColumnConfig> columns = task.getColumns();
+        for (ColumnConfig column : columns) {
+            String name = column.getName();
+            // skip NON json path notation to build output schema
+            if (! PathCompiler.isProbablyJsonPath(name)) {
+                continue;
+            }
+            JsonPathTokenUtil.assertDoNotEndsWithWildcard(name);
+            // automatically fill ancestor jsonpaths
+            for (JsonColumn ancestorJsonColumn : getAncestorJsonColumnList(name)) {
+                String ancestorJsonPath = ancestorJsonColumn.getPath();
+                if (!jsonColumnsContainsKey(ancestorJsonPath)) {
+                    jsonColumnsPut(ancestorJsonPath, ancestorJsonColumn);
+                }
+            }
+            // leaf jsonpath
+            if (column.getSrc().isPresent()) {
+                String src = column.getSrc().get();
+                jsonColumnsPut(name, new JsonColumn(name, null, null, src));
+            }
+            else if (column.getType().isPresent() && column.getDefault().isPresent()) { // add column
+                Type type = column.getType().get();
+                Value defaultValue = getDefault(task, name, type, column);
+                jsonColumnsPut(name, new JsonColumn(name, type, defaultValue));
+            }
+            else {
+                Type type = column.getType().isPresent() ? column.getType().get() : null;
+                jsonColumnsPut(name, new JsonColumn(name, type));
+            }
+        }
+    }
+
+    private void buildJsonAddColumns()
+    {
+        List<ColumnConfig> addColumns = task.getAddColumns();
+        for (ColumnConfig column : addColumns) {
+            String name = column.getName();
+            // skip NON json path notation to build output schema
+            if (! PathCompiler.isProbablyJsonPath(name)) {
+                continue;
+            }
+            JsonPathTokenUtil.assertDoNotEndsWithWildcard(name);
+            // automatically fill ancestor jsonpaths
+            for (JsonColumn ancestorJsonColumn : getAncestorJsonColumnList(name)) {
+                String ancestorJsonPath = ancestorJsonColumn.getPath();
+                if (!jsonAddColumnsContainsKey(ancestorJsonPath)) {
+                    jsonAddColumnsPut(ancestorJsonPath, ancestorJsonColumn);
+                }
+            }
+            // leaf jsonpath
+            if (column.getSrc().isPresent()) {
+                String src = column.getSrc().get();
+                jsonAddColumnsPut(name, new JsonColumn(name, null, null, src));
+            }
+            else if (column.getType().isPresent() && column.getDefault().isPresent()) { // add column
+                Type type = column.getType().get();
+                Value defaultValue = getDefault(task, name, type, column);
+                jsonAddColumnsPut(name, new JsonColumn(name, type, defaultValue));
+            }
+            else {
+                throw new SchemaConfigException(String.format("add_columns: Column '%s' does not have \"src\", or \"type\" and \"default\"", name));
+            }
+        }
+    }
+
+    private void buildJsonDropColumns()
+    {
+        List<ColumnConfig> dropColumns = task.getDropColumns();
+        for (ColumnConfig dropColumn : dropColumns) {
+            String name = dropColumn.getName();
+            // skip NON json path notation to build output schema
+            if (! PathCompiler.isProbablyJsonPath(name)) {
+                continue;
+            }
+            jsonDropColumnsPut(name);
+        }
+    }
+
     // build jsonColumns, jsonAddColumns, and jsonDropColumns
     private void buildJsonSchema()
     {
-        List<ColumnConfig> columns = task.getColumns();
-        List<ColumnConfig> addColumns = task.getAddColumns();
-        List<ColumnConfig> dropColumns = task.getDropColumns();
-
-        int i = 0;
-        if (dropColumns.size() > 0) {
-            for (ColumnConfig dropColumn : dropColumns) {
-                String name = dropColumn.getName();
-                // skip NON json path notation to build output schema
-                if (! PathCompiler.isProbablyJsonPath(name)) {
-                    continue;
-                }
-                jsonDropColumnsPut(name);
-            }
+        if (task.getDropColumns().size() > 0) {
+            buildJsonDropColumns();
         }
-        else if (columns.size() > 0) {
-            for (ColumnConfig column : columns) {
-                String name = column.getName();
-                // skip NON json path notation to build output schema
-                if (! PathCompiler.isProbablyJsonPath(name)) {
-                    continue;
-                }
-                if (column.getSrc().isPresent()) {
-                    String src = column.getSrc().get();
-                    jsonColumnsPut(name, new JsonColumn(name, null, null, src));
-                }
-                else if (column.getType().isPresent() && column.getDefault().isPresent()) { // add column
-                    Type type = column.getType().get();
-                    Value defaultValue = getDefault(task, name, type, column);
-                    jsonColumnsPut(name, new JsonColumn(name, type, defaultValue));
-                }
-                else {
-                    Type type = column.getType().isPresent() ? column.getType().get() : null;
-                    jsonColumnsPut(name, new JsonColumn(name, type));
-                }
-            }
+        else if (task.getColumns().size() > 0) {
+            buildJsonColumns();
         }
-
         // Add columns to last. If you want to add to head or middle, you can use `columns` option
-        if (addColumns.size() > 0) {
-            for (ColumnConfig column : addColumns) {
-                String name = column.getName();
-                // skip NON json path notation to build output schema
-                if (! PathCompiler.isProbablyJsonPath(name)) {
-                    continue;
-                }
-                if (column.getSrc().isPresent()) {
-                    String src = column.getSrc().get();
-                    jsonAddColumnsPut(name, new JsonColumn(name, null, null, src));
-                }
-                else if (column.getType().isPresent() && column.getDefault().isPresent()) { // add column
-                    Type type = column.getType().get();
-                    Value defaultValue = getDefault(task, name, type, column);
-                    jsonAddColumnsPut(name, new JsonColumn(name, type, defaultValue));
-                }
-                else {
-                    throw new SchemaConfigException(String.format("add_columns: Column '%s' does not have \"src\", or \"type\" and \"default\"", name));
-                }
-            }
+        if (task.getAddColumns().size() > 0) {
+            buildJsonAddColumns();
         }
     }
 
@@ -189,23 +250,53 @@ public class JsonVisitor
             if (!PathCompiler.isProbablyJsonPath(name)) {
                 continue;
             }
-            Path path;
-            try {
-                path = PathCompiler.compile(name);
-            } catch (InvalidPathException e) {
-                throw new ConfigException(String.format("path %s, %s", name, e.getMessage()));
+            for (JsonColumn ancestorJsonColumn : getAncestorJsonColumnList(name)) {
+                this.shouldVisitSet.add(ancestorJsonColumn.getPath());
             }
-            PathToken parts = path.getRoot();
-            int count = parts.getTokenCount();
-            StringBuilder partialPath = new StringBuilder("$");
-            // skip "$"
-            for (int i = 1; i < count; i++) {
-                parts = parts.next();
-                JsonPathTokenUtil.assertSupportedPathToken(parts, name);
-                partialPath.append(parts.getPathFragment().toString());
-                this.shouldVisitSet.add(partialPath.toString());
-            }
+            Path path = PathCompiler.compile(name);
+            this.shouldVisitSet.add(path.toString());
         }
+    }
+
+    /*
+     * <pre>
+     * $['foo']['bar'][0]['baz']
+     * #=>
+     * name: $['foo'], type: json, default: {}
+     * name: $['foo']['bar'], type: json, default: []
+     * name: $['foo']['bar'][0], type: json, default: {}
+     * </pre>
+     *
+     * @return ancestors as an array
+     */
+    public static ArrayList<JsonColumn> getAncestorJsonColumnList(String jsonPath)
+    {
+        ArrayList<JsonColumn> ancestorJsonColumnList = new ArrayList<>();
+        Path path;
+        try {
+            path = PathCompiler.compile(jsonPath);
+        }
+        catch (InvalidPathException e) {
+            throw new ConfigException(String.format("jsonpath %s, %s", jsonPath, e.getMessage()));
+        }
+        StringBuilder partialPath = new StringBuilder("$");
+        PathToken parts = path.getRoot();
+        parts = parts.next(); // skip "$"
+        while (! parts.isLeaf()) {
+            JsonPathTokenUtil.assertSupportedPathToken(parts, jsonPath);
+            partialPath.append(parts.getPathFragment());
+            PathToken next = parts.next();
+            JsonColumn jsonColumn;
+            if (next instanceof ArrayPathToken) {
+                jsonColumn = new JsonColumn(partialPath.toString(), Types.JSON, ValueFactory.newArray(new Value[0], false));
+            }
+            else {
+                jsonColumn = new JsonColumn(partialPath.toString(), Types.JSON, ValueFactory.newMap(new Value[0]));
+            }
+            ancestorJsonColumnList.add(jsonColumn);
+            parts = next;
+        }
+        return ancestorJsonColumnList;
     }
 
     boolean shouldVisit(String jsonPath)

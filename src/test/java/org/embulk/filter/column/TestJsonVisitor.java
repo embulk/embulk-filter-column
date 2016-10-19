@@ -14,13 +14,14 @@ import org.junit.rules.ExpectedException;
 import org.msgpack.value.MapValue;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
-import io.github.medjed.jsonpathcompiler.InvalidPathException;
 
 import static org.embulk.spi.type.Types.JSON;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -68,6 +69,34 @@ public class TestJsonVisitor
         Schema inputSchema = Schema.builder().build();
         // b[*] should be written as b
         jsonVisitor(task, inputSchema);
+    }
+
+    @Test
+    public void getAncestorJsonColumnList()
+    {
+        ArrayList<JsonColumn> subject;
+
+        subject = JsonVisitor.getAncestorJsonColumnList("$.json1.a.default");
+        assertEquals("$['json1']", subject.get(0).getPath());
+        assertTrue(subject.get(0).getDefaultValue().isMapValue());
+        assertEquals("$['json1']['a']", subject.get(1).getPath());
+        assertTrue(subject.get(1).getDefaultValue().isMapValue());
+
+        subject = JsonVisitor.getAncestorJsonColumnList("$.json1.a[0].default");
+        assertEquals("$['json1']", subject.get(0).getPath());
+        assertTrue(subject.get(0).getDefaultValue().isMapValue());
+        assertEquals("$['json1']['a']", subject.get(1).getPath());
+        assertTrue(subject.get(1).getDefaultValue().isArrayValue());
+        assertEquals("$['json1']['a'][0]", subject.get(2).getPath());
+        assertTrue(subject.get(2).getDefaultValue().isMapValue());
+
+        subject = JsonVisitor.getAncestorJsonColumnList("$.json1.a.default[0]");
+        assertEquals("$['json1']", subject.get(0).getPath());
+        assertTrue(subject.get(0).getDefaultValue().isMapValue());
+        assertEquals("$['json1']['a']", subject.get(1).getPath());
+        assertTrue(subject.get(1).getDefaultValue().isMapValue());
+        assertEquals("$['json1']['a']['default']", subject.get(2).getPath());
+        assertTrue(subject.get(2).getDefaultValue().isArrayValue());
     }
 
     @Test
@@ -150,19 +179,22 @@ public class TestJsonVisitor
                 .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
-        assertFalse(subject.jsonAddColumns.containsKey("$['json1']"));
+        assertTrue(subject.jsonAddColumns.containsKey("$"));
+        assertTrue(subject.jsonAddColumns.containsKey("$['json1']"));
         assertTrue(subject.jsonAddColumns.containsKey("$['json1']['a']"));
         assertTrue(subject.jsonAddColumns.containsKey("$['json1']['a']['copy_array']"));
 
         {
             HashMap<String, JsonColumn> jsonColumns = subject.jsonAddColumns.get("$['json1']['a']");
-            assertEquals(2, jsonColumns.size());
+            assertEquals(3, jsonColumns.size());
             String[] keys = jsonColumns.keySet().toArray(new String[0]);
             JsonColumn[] values = jsonColumns.values().toArray(new JsonColumn[0]);
             assertEquals("$['json1']['a']['default']", keys[0]);
             assertEquals("$['json1']['a']['default']", values[0].getPath());
             assertEquals("$['json1']['a']['copy']", keys[1]);
             assertEquals("$['json1']['a']['copy']", values[1].getPath());
+            assertEquals("$['json1']['a']['copy_array']", keys[2]);
+            assertEquals("$['json1']['a']['copy_array']", values[2].getPath());
         }
 
         {
@@ -190,19 +222,23 @@ public class TestJsonVisitor
                 .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
-        assertFalse(subject.jsonColumns.containsKey("$['json1']"));
+        // 1st level keys are parents of jsonpath
+        assertTrue(subject.jsonColumns.containsKey("$"));
+        assertTrue(subject.jsonColumns.containsKey("$['json1']"));
         assertTrue(subject.jsonColumns.containsKey("$['json1']['a']"));
         assertTrue(subject.jsonColumns.containsKey("$['json1']['a']['copy_array']"));
 
         {
             HashMap<String, JsonColumn> jsonColumns = subject.jsonColumns.get("$['json1']['a']");
-            assertEquals(2, jsonColumns.size());
+            assertEquals(3, jsonColumns.size());
             String[] keys = jsonColumns.keySet().toArray(new String[0]);
             JsonColumn[] values = jsonColumns.values().toArray(new JsonColumn[0]);
             assertEquals("$['json1']['a']['default']", keys[0]);
             assertEquals("$['json1']['a']['default']", values[0].getPath());
             assertEquals("$['json1']['a']['copy']", keys[1]);
             assertEquals("$['json1']['a']['copy']", values[1].getPath());
+            assertEquals("$['json1']['a']['copy_array']", keys[2]);
+            assertEquals("$['json1']['a']['copy_array']", values[2].getPath());
         }
 
         {
@@ -269,7 +305,6 @@ public class TestJsonVisitor
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "add_columns:",
-                "  - {name: $.json1.k3, type: json, default: \"{}\"}",
                 "  - {name: $.json1.k3.k3, type: string, default: v}",
                 "  - {name: $.json1.k4, src: $.json1.k2}");
         Schema inputSchema = Schema.builder()
@@ -297,8 +332,7 @@ public class TestJsonVisitor
                 "type: column",
                 "columns:",
                 "  - {name: $.json1.k1}",
-                "  - {name: $.json1.k2.k2}", // $.json1.k2 must be specified now, or $.json.k2 will be removed entirely
-                "  - {name: $.json1.k3, type: json, default: \"{}\"}",
+                "  - {name: $.json1.k2.k2}",
                 "  - {name: $.json1.k3.k3, type: string, default: v}",
                 "  - {name: $.json1.k4, src: $.json1.k2}");
         Schema inputSchema = Schema.builder()
@@ -316,7 +350,7 @@ public class TestJsonVisitor
                 k2, ValueFactory.newMap(k2, v));
 
         MapValue visited = subject.visit("$['json1']", map).asMapValue();
-        assertEquals("{\"k1\":{\"k1\":\"v\"},\"k3\":{\"k3\":\"v\"},\"k4\":{\"k2\":\"v\"}}", visited.toString());
+        assertEquals("{\"k1\":{\"k1\":\"v\"},\"k2\":{\"k2\":\"v\"},\"k3\":{\"k3\":\"v\"},\"k4\":{\"k2\":\"v\"}}", visited.toString());
     }
 
     @Test
@@ -352,8 +386,6 @@ public class TestJsonVisitor
                 "type: column",
                 "add_columns:",
                 "  - {name: \"$.json1.k1[1]\", src: \"$.json1.k1[0]\"}",
-                "  - {name: \"$.json1.k3\", type: json, default: \"[]\"}",
-                "  - {name: \"$.json1.k3[0]\", type: json, default: \"{}\"}",
                 "  - {name: \"$.json1.k3[0].k3\", type: string, default: v}");
         Schema inputSchema = Schema.builder()
                 .add("json1", JSON)
