@@ -67,13 +67,13 @@ public class TestJsonColumn
     }
 
     @Test
-    public void tailIndex()
+    public void getTailIndex()
     {
-        assertEquals(null, JsonColumn.tailIndex("$['foo'].bar.baz"));
-        assertEquals(null, JsonColumn.tailIndex("$.foo.bar"));
-        assertEquals(null, JsonColumn.tailIndex("$.foo"));
-        assertEquals(new Long(1), JsonColumn.tailIndex("$.foo[0][1]"));
-        assertEquals(new Long(0), JsonColumn.tailIndex("$.foo[0]"));
-        assertEquals(new Long(0), JsonColumn.tailIndex("$[0]"));
+        assertEquals(null, JsonColumn.getTailIndex("$['foo'].bar.baz"));
+        assertEquals(null, JsonColumn.getTailIndex("$.foo.bar"));
+        assertEquals(null, JsonColumn.getTailIndex("$.foo"));
+        assertEquals(new Long(1), JsonColumn.getTailIndex("$.foo[0][1]"));
+        assertEquals(new Long(0), JsonColumn.getTailIndex("$.foo[0]"));
+        assertEquals(new Long(0), JsonColumn.getTailIndex("$[0]"));
     }
 }

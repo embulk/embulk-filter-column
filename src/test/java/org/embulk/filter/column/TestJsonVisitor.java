@@ -435,11 +435,8 @@ public class TestJsonVisitor
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "columns:",
-                "  - {name: \"$.json1.k1\"}",
                 "  - {name: \"$.json1.k1[1]\", src: \"$.json1.k1[0]\"}",
-                "  - {name: \"$.json1.k2[0]\"}", // $.json1.k2 must be specified now, or $.json.k2 will be removed entirely
-                "  - {name: \"$.json1.k3\", type: json, default: \"[]\"}",
-                "  - {name: \"$.json1.k3[0]\", type: json, default: \"{}\"}",
+                "  - {name: \"$.json1.k2[0]\"}",
                 "  - {name: \"$.json1.k3[0].k3\", type: string, default: v}");
         Schema inputSchema = Schema.builder()
                 .add("json1", JSON)
@@ -456,7 +453,7 @@ public class TestJsonVisitor
                 k2, ValueFactory.newArray(v, v));
 
         MapValue visited = subject.visit("$['json1']", map).asMapValue();
-        assertEquals("{\"k1\":[{\"k1\":\"v\"}],\"k3\":[{\"k3\":\"v\"}]}", visited.toString());
+        assertEquals("{\"k1\":[{\"k1\":\"v\"}],\"k2\":[\"v\"],\"k3\":[{\"k3\":\"v\"}]}", visited.toString());
     }
 
     @Test
@@ -491,7 +488,6 @@ public class TestJsonVisitor
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "add_columns:",
-                "  - {name: \"$['json1']['k3']\", type: json, default: \"{}\"}",
                 "  - {name: \"$['json1']['k3']['k3']\", type: string, default: v}",
                 "  - {name: \"$['json1']['k4']\", src: \"$['json1']['k2']\"}");
         Schema inputSchema = Schema.builder()
@@ -520,7 +516,6 @@ public class TestJsonVisitor
                 "columns:",
                 "  - {name: \"$['json1']['k1']\"}",
                 "  - {name: \"$['json1']['k2']['k2']\"}",
-                "  - {name: \"$['json1']['k3']\", type: json, default: \"{}\"}",
                 "  - {name: \"$['json1']['k3']['k3']\", type: string, default: v}",
                 "  - {name: \"$['json1']['k4']\", src: \"$['json1']['k2']\"}");
         Schema inputSchema = Schema.builder()
@@ -537,7 +532,7 @@ public class TestJsonVisitor
                 k2, ValueFactory.newMap(k2, v));
 
         MapValue visited = subject.visit("$['json1']", map).asMapValue();
-        assertEquals("{\"k1\":{\"k1\":\"v\"},\"k3\":{\"k3\":\"v\"},\"k4\":{\"k2\":\"v\"}}", visited.toString());
+        assertEquals("{\"k1\":{\"k1\":\"v\"},\"k2\":{\"k2\":\"v\"},\"k3\":{\"k3\":\"v\"},\"k4\":{\"k2\":\"v\"}}", visited.toString());
     }
 
     @Test
@@ -573,8 +568,6 @@ public class TestJsonVisitor
                 "type: column",
                 "add_columns:",
                 "  - {name: \"$['json1']['k1'][1]\", src: \"$['json1']['k1'][0]\"}",
-                "  - {name: \"$['json1']['k3']\", type: json, default: \"[]\"}",
-                "  - {name: \"$['json1']['k3'][0]\", type: json, default: \"{}\"}",
                 "  - {name: \"$['json1']['k3'][0]['k3']\", type: string, default: v}");
         Schema inputSchema = Schema.builder()
                 .add("json1", JSON)
@@ -600,11 +593,8 @@ public class TestJsonVisitor
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "columns:",
-                "  - {name: \"$['json1']['k1']\"}",
                 "  - {name: \"$['json1']['k1'][1]\", src: \"$['json1']['k1'][0]\"}",
                 "  - {name: \"$['json1']['k2'][0]\"}",
-                "  - {name: \"$['json1']['k3']\", type: json, default: \"[]\"}",
-                "  - {name: \"$['json1']['k3'][0]\", type: json, default: \"{}\"}",
                 "  - {name: \"$['json1']['k3'][0]['k3']\", type: string, default: v}");
         Schema inputSchema = Schema.builder()
                 .add("json1", JSON)
@@ -620,7 +610,7 @@ public class TestJsonVisitor
                 k2, ValueFactory.newArray(v, v));
 
         MapValue visited = subject.visit("$['json1']", map).asMapValue();
-        assertEquals("{\"k1\":[{\"k1\":\"v\"}],\"k3\":[{\"k3\":\"v\"}]}", visited.toString());
+        assertEquals("{\"k1\":[{\"k1\":\"v\"}],\"k2\":[\"v\"],\"k3\":[{\"k3\":\"v\"}]}", visited.toString());
     }
 
     // Because the dot notation is converted to single quotes by default,
@@ -708,13 +698,14 @@ public class TestJsonVisitor
         assertEquals("{\"k____1\":[{\"k____1\":\"v\"}],\"k_2\":{\"k_2\":\"v\"}}", visited.toString());
     }
 
+    /*
     @Test
     public void visit_withColumnNameIncludingSingleQuotes()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "columns:",
-                " - {name: \"$[\\\"'json1\\\"]['k1']\"}");
+                " - {name: \"$['\\\\'json1']['k1']\"}");
         Schema inputSchema = Schema.builder()
                 .add("'json1", JSON)
                 .build();
@@ -728,6 +719,7 @@ public class TestJsonVisitor
         MapValue visited = subject.visit("$['\\'json1']", map).asMapValue();
         assertEquals("{\"k1\":\"v\"}", visited.toString());
     }
+    */
 
     @Test(expected = ConfigException.class)
     public void configException_MultiProperties() {

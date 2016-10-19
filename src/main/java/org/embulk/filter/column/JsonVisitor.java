@@ -295,6 +295,7 @@ public class JsonVisitor
             ancestorJsonColumnList.add(jsonColumn);
             parts = next;
         }
+        JsonPathTokenUtil.assertSupportedPathToken(parts, jsonPath);
         return ancestorJsonColumnList;
     }
 
@@ -343,7 +344,7 @@ public class JsonVisitor
                 }
                 String newPath = jsonColumn.getPath();
                 Value visited = visit(newPath, v);
-                // int i = jsonColumn.tailIndex().intValue();
+                // int i = jsonColumn.getTailIndex().intValue();
                 // index is shifted, so j++ is used.
                 newValue.add(j++, visited == null ? ValueFactory.newNil() : visited);
             }
@@ -357,6 +358,10 @@ public class JsonVisitor
         }
         if (this.jsonAddColumns.containsKey(rootPath)) {
             for (JsonColumn jsonColumn : this.jsonAddColumns.get(rootPath).values()) {
+                int i = jsonColumn.getTailIndex().intValue();
+                if (0 <= i && i < size) {
+                    continue; // possibly already visit, avoid duplication
+                }
                 int src = jsonColumn.getSrcTailIndex().intValue();
                 Value v = (src < arrayValue.size() ? arrayValue.get(src) : null);
                 if (v == null) {
@@ -416,6 +421,10 @@ public class JsonVisitor
         if (this.jsonAddColumns.containsKey(rootPath)) {
             Map<Value, Value> map = mapValue.map();
             for (JsonColumn jsonColumn : this.jsonAddColumns.get(rootPath).values()) {
+                Value k = jsonColumn.getTailNameValue();
+                if (map.containsKey(k)) {
+                    continue; // probably already visit, avoid duplication
+                }
                 Value src = jsonColumn.getSrcTailNameValue();
                 Value v = map.get(src);
                 if (v == null) {

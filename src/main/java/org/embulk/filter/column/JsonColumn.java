@@ -56,14 +56,14 @@ public class JsonColumn
         this.pathValue = ValueFactory.newString(path);
         this.parentPath = compiledPath.getParentPath();
 
-        this.tailIndex = tailIndex(compiledRoot);
+        this.tailIndex = getTailIndex(compiledRoot);
         this.parentPathValue = ValueFactory.newString(parentPath);
         String tailName = getTailName(compiledRoot);
         this.tailNameValue = tailName == null ? ValueFactory.newNil() : ValueFactory.newString(tailName);
 
         this.srcValue = ValueFactory.newString(this.src);
         this.srcParentPath = compiledSrc.getParentPath();
-        this.srcTailIndex = tailIndex(compiledSrcRoot);
+        this.srcTailIndex = getTailIndex(compiledSrcRoot);
         this.srcParentPathValue = ValueFactory.newString(this.srcParentPath);
         String srcTailName = getTailName(compiledSrcRoot);
         this.srcTailNameValue = srcTailName == null ? ValueFactory.newNil() : ValueFactory.newString(srcTailName);
@@ -89,7 +89,7 @@ public class JsonColumn
         }
     }
 
-    private Long tailIndex(RootPathToken root)
+    private Long getTailIndex(RootPathToken root)
     {
         PathToken tail = root.getTail();
         if (tail instanceof ArrayPathToken) {
@@ -132,7 +132,7 @@ public class JsonColumn
         return parentPath;
     }
 
-    public Long tailIndex()
+    public Long getTailIndex()
     {
         return tailIndex;
     }
@@ -183,7 +183,7 @@ public class JsonColumn
         return ((RootPathToken) PathCompiler.compile(path).getRoot()).getTailPath();
     }
 
-    public static Long tailIndex(String path)
+    public static Long getTailIndex(String path)
     {
         Path compiledPath = PathCompiler.compile(path);
         PathToken tail = ((RootPathToken) compiledPath.getRoot()).getTail();
