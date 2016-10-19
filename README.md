@@ -131,6 +131,20 @@ NOTE:
 * JSONPath syntax is not fully supported
 * `type: timesatmp` for `add_columns` or `columns` is not available because Embulk's `type: json` cannot have timestamp column
 
+NOTE:
+
+Rename or copy of json paths by `src` option is only partially supported yet. The parent json path must be same like:
+
+```
+- {name: $.payload.foo.dest, src: $.payload.foo.src}
+```
+
+I mean that below example does not work yet (`$.payload.foo` and `$.payload.bar`)
+
+```
+- {name: $.payload.foo.dest, src: $.payload.bar.src}
+```
+
 ## ToDo
 
 * Write test
