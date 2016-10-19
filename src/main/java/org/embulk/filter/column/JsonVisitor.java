@@ -5,7 +5,6 @@ import io.github.medjed.jsonpathcompiler.expressions.Path;
 import io.github.medjed.jsonpathcompiler.expressions.path.ArrayPathToken;
 import io.github.medjed.jsonpathcompiler.expressions.path.PathCompiler;
 import io.github.medjed.jsonpathcompiler.expressions.path.PathToken;
-import io.github.medjed.jsonpathcompiler.expressions.path.RootPathToken;
 import org.embulk.config.ConfigException;
 import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
@@ -152,7 +151,7 @@ public class JsonVisitor
             if (! PathCompiler.isProbablyJsonPath(name)) {
                 continue;
             }
-            JsonPathTokenUtil.assertDoNotEndsWithWildcard(name);
+            JsonPathTokenUtil.assertDoNotEndsWithArrayWildcard(name);
             // automatically fill ancestor jsonpaths
             for (JsonColumn ancestorJsonColumn : getAncestorJsonColumnList(name)) {
                 String ancestorJsonPath = ancestorJsonColumn.getPath();
@@ -186,7 +185,7 @@ public class JsonVisitor
             if (! PathCompiler.isProbablyJsonPath(name)) {
                 continue;
             }
-            JsonPathTokenUtil.assertDoNotEndsWithWildcard(name);
+            JsonPathTokenUtil.assertDoNotEndsWithArrayWildcard(name);
             // automatically fill ancestor jsonpaths
             for (JsonColumn ancestorJsonColumn : getAncestorJsonColumnList(name)) {
                 String ancestorJsonPath = ancestorJsonColumn.getPath();

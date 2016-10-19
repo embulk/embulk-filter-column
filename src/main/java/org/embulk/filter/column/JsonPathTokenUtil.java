@@ -41,7 +41,7 @@ public class JsonPathTokenUtil
         }
     }
 
-    public static void assertDoNotEndsWithWildcard(String path)
+    public static void assertDoNotEndsWithArrayWildcard(String path)
     {
         Path compiledPath;
         try {

@@ -59,18 +59,6 @@ public class TestJsonVisitor
         return new JsonVisitor(task, inputSchema, outputSchema);
     }
 
-    @Test(expected = ConfigException.class)
-    public void configException_Columns()
-    {
-        PluginTask task = taskFromYamlString(
-                "type: column",
-                "columns:",
-                "  - {name: \"$.json1.b.b[*]\"}");
-        Schema inputSchema = Schema.builder().build();
-        // b[*] should be written as b
-        jsonVisitor(task, inputSchema);
-    }
-
     @Test
     public void getAncestorJsonColumnList()
     {
@@ -132,7 +120,7 @@ public class TestJsonVisitor
     }
 
     @Test
-    public void buildJsonSchema_DropColumns()
+    public void buildJsonDropColumns()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -164,8 +152,32 @@ public class TestJsonVisitor
         }
     }
 
+    @Test(expected = ConfigException.class)
+    public void configException_Columns()
+    {
+        PluginTask task = taskFromYamlString(
+                "type: column",
+                "columns:",
+                "  - {name: \"$.json1.b.b[*]\"}");
+        Schema inputSchema = Schema.builder().build();
+        // b[*] should be written as b
+        jsonVisitor(task, inputSchema);
+    }
+
+    @Test(expected = ConfigException.class)
+    public void buildJsonAddColumns_ConfigException()
+    {
+        PluginTask task = taskFromYamlString(
+                "type: column",
+                "add_columns:",
+                "  - {name: \"$.json1.b.b[*]\", type: json, default: []}");
+        Schema inputSchema = Schema.builder().build();
+        // b[*] should be written as b
+        jsonVisitor(task, inputSchema);
+    }
+
     @Test
-    public void buildJsonSchema_AddColumns()
+    public void buildJsonAddColumns()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -207,8 +219,20 @@ public class TestJsonVisitor
         }
     }
 
+    @Test(expected = ConfigException.class)
+    public void buildJsonColumns_ConfigException()
+    {
+        PluginTask task = taskFromYamlString(
+                "type: column",
+                "columns:",
+                "  - {name: \"$.json1.b.b[*]\"}");
+        Schema inputSchema = Schema.builder().build();
+        // b[*] should be written as b
+        jsonVisitor(task, inputSchema);
+    }
+
     @Test
-    public void buildJsonSchema_Columns()
+    public void buildJsonColumns()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -252,7 +276,7 @@ public class TestJsonVisitor
     }
 
     @Test
-    public void buildJsonSchema_Mix()
+    public void buildJsonSchema()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -706,7 +730,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void configException_mustBeRaisedConfigExceptionWithMultiProperties() {
+    public void configException_MultiProperties() {
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "columns:",
@@ -719,7 +743,7 @@ public class TestJsonVisitor
 
     // It is recognized multi properties if the square brackets does not close properly
     @Test(expected = ConfigException.class)
-    public void configException_mustBeRaisedInvalidPathExceptionWithPropertyIsNotSeparatedByCommas()
+    public void configException_PropertyIsNotSeparatedByCommas()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -732,7 +756,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void configException_mustBeRaisedConfigExceptionWithFunctionPathToken()
+    public void configException_FunctionPathToken()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -745,7 +769,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void configException_mustBeRaisedConfigExceptionWithPredicatePathToken()
+    public void configException_PredicatePathToken()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -758,7 +782,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void configException_mustBeRaisedConfigExceptionWithScanPathToken()
+    public void configException_ScanPathToken()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -771,7 +795,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void configException_mustBeRaisedConfigExceptionWithMultiIndexOperation()
+    public void configException_MultiIndexOperation()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -784,7 +808,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void configException_mustBeRaisedConfigExceptionWithMultiIndexOperationAtMiddlePosition()
+    public void configException_IndexOperationAtMiddlePosition()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -797,7 +821,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void configException_mustBeRaisedConfigExceptionWithMArraySliceOperation()
+    public void configException_ArraySliceOperation()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -810,7 +834,7 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void configException_mustBeRaisedConfigExceptionWithMArraySliceOperationAtMiddlePosition()
+    public void configException_MArraySliceOperationAtMiddlePosition()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
@@ -826,7 +850,7 @@ public class TestJsonVisitor
     public ExpectedException thrown = ExpectedException.none();
 
     @Test
-    public void configException_mustBeRaisedConfigExceptionEffectively()
+    public void configException_PathCompileError()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
