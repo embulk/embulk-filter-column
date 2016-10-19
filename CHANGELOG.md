@@ -1,8 +1,9 @@
-# 0.6.0 (2016-10-01)
+# 0.6.0 (2016-XX-XX)
 
 Enhancements: 
 
 * Support bracket notation in json path (thanks to @kysnm)
+* Autocomplete ancestor json paths
 
 # 0.5.4 (2016-08-05)
 
