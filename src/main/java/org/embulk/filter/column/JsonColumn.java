@@ -94,7 +94,7 @@ public class JsonColumn
         PathToken tail = root.getTail();
         if (tail instanceof ArrayPathToken) {
             ArrayIndexOperation arrayIndexOperation = ((ArrayPathToken) tail).getArrayIndexOperation();
-            JsonPathTokenUtil.assertSupportedArrayPathToken(arrayIndexOperation, path);
+            JsonPathUtil.assertSupportedArrayPathToken(arrayIndexOperation, path);
             return arrayIndexOperation.indexes().get(0).longValue();
         }
         else {

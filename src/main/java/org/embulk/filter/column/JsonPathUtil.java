@@ -12,8 +12,27 @@ import io.github.medjed.jsonpathcompiler.expressions.path.RootPathToken;
 import io.github.medjed.jsonpathcompiler.expressions.path.ScanPathToken;
 import org.embulk.config.ConfigException;
 
-public class JsonPathTokenUtil
+public class JsonPathUtil
 {
+    public static void assertJsonPathFormat(String path)
+    {
+        Path compiledPath;
+        try {
+            compiledPath = PathCompiler.compile(path);
+        }
+        catch (InvalidPathException e) {
+            throw new ConfigException(String.format("jsonpath %s, %s", path, e.getMessage()));
+        }
+        PathToken pathToken = compiledPath.getRoot();
+        while (true) {
+            assertSupportedPathToken(pathToken, path);
+            if (pathToken.isLeaf()) {
+                break;
+            }
+            pathToken = pathToken.next();
+        }
+    }
+
     public static void assertSupportedPathToken(PathToken pathToken, String path)
     {
         if (pathToken instanceof ArrayPathToken) {

@@ -151,7 +151,7 @@ public class JsonVisitor
             if (! PathCompiler.isProbablyJsonPath(name)) {
                 continue;
             }
-            JsonPathTokenUtil.assertDoNotEndsWithArrayWildcard(name);
+            JsonPathUtil.assertDoNotEndsWithArrayWildcard(name);
             // automatically fill ancestor jsonpaths
             for (JsonColumn ancestorJsonColumn : getAncestorJsonColumnList(name)) {
                 String ancestorJsonPath = ancestorJsonColumn.getPath();
@@ -185,7 +185,7 @@ public class JsonVisitor
             if (! PathCompiler.isProbablyJsonPath(name)) {
                 continue;
             }
-            JsonPathTokenUtil.assertDoNotEndsWithArrayWildcard(name);
+            JsonPathUtil.assertDoNotEndsWithArrayWildcard(name);
             // automatically fill ancestor jsonpaths
             for (JsonColumn ancestorJsonColumn : getAncestorJsonColumnList(name)) {
                 String ancestorJsonPath = ancestorJsonColumn.getPath();
@@ -249,6 +249,7 @@ public class JsonVisitor
             if (!PathCompiler.isProbablyJsonPath(name)) {
                 continue;
             }
+            JsonPathUtil.assertJsonPathFormat(name);
             for (JsonColumn ancestorJsonColumn : getAncestorJsonColumnList(name)) {
                 this.shouldVisitSet.add(ancestorJsonColumn.getPath());
             }
@@ -268,21 +269,20 @@ public class JsonVisitor
      *
      * @return ancestors as an array
      */
-    public static ArrayList<JsonColumn> getAncestorJsonColumnList(String jsonPath)
+    public static ArrayList<JsonColumn> getAncestorJsonColumnList(String path)
     {
         ArrayList<JsonColumn> ancestorJsonColumnList = new ArrayList<>();
-        Path path;
+        Path compiledPath;
         try {
-            path = PathCompiler.compile(jsonPath);
+            compiledPath = PathCompiler.compile(path);
         }
         catch (InvalidPathException e) {
-            throw new ConfigException(String.format("jsonpath %s, %s", jsonPath, e.getMessage()));
+            throw new ConfigException(String.format("jsonpath %s, %s", path, e.getMessage()));
         }
         StringBuilder partialPath = new StringBuilder("$");
-        PathToken parts = path.getRoot();
+        PathToken parts = compiledPath.getRoot();
         parts = parts.next(); // skip "$"
         while (! parts.isLeaf()) {
-            JsonPathTokenUtil.assertSupportedPathToken(parts, jsonPath);
             partialPath.append(parts.getPathFragment());
             PathToken next = parts.next();
             JsonColumn jsonColumn;
@@ -295,7 +295,6 @@ public class JsonVisitor
             ancestorJsonColumnList.add(jsonColumn);
             parts = next;
         }
-        JsonPathTokenUtil.assertSupportedPathToken(parts, jsonPath);
         return ancestorJsonColumnList;
     }
 
