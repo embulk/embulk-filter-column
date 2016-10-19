@@ -423,7 +423,7 @@ public class JsonVisitor
             for (JsonColumn jsonColumn : this.jsonAddColumns.get(rootPath).values()) {
                 Value k = jsonColumn.getTailNameValue();
                 if (map.containsKey(k)) {
-                    continue; // probably already visit, avoid duplication
+                    continue; // possibly already visit, avoid duplication
                 }
                 Value src = jsonColumn.getSrcTailNameValue();
                 Value v = map.get(src);
