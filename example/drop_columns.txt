@@ -1,0 +1,11 @@
+2016-10-20 02:30:16.407 +0900: Embulk v0.8.6
+2016-10-20 02:30:17.290 +0900 [INFO] (0001:preview): Loaded plugin embulk/filter/column from a load path
+2016-10-20 02:30:17.305 +0900 [INFO] (0001:preview): Listing local files at directory 'example' filtering filename by prefix 'example.csv'
+2016-10-20 02:30:17.310 +0900 [INFO] (0001:preview): Loading files [example/example.csv]
++---------------------------------------------+--------------+---------------+
+|                                 name:string | score:double |     json:json |
++---------------------------------------------+--------------+---------------+
+| Vqjht6YEUBsMPXmoW1iOGFROZF27pBzz0TUkOKeDXEY |       1370.0 | {"bar":"bar"} |
+| Vqjht6YEUBsMPXmoW1iOGFROZF27pBzz0TUkOKeDXEY |       1370.0 |            {} |
+|                                             |       9170.0 |               |
++---------------------------------------------+--------------+---------------+

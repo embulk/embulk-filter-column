@@ -23,7 +23,7 @@ filters:
       - {name: d, type: timestamp, default: "2015-07-13"}
       - {name: t, type: timestamp, default: "2015-07-13 00:00:00", timezone: "UTC", format: "%Y-%m-%d %H:%M:%S"}
       - {name: copy_score, src: score}
-      - {name: $.json.foo, type: long, default: 1}
+      - {name: $.json.bar, type: long, default: 1}
       - {name: $.json.d, type: string, default: "2015-07-13"}
       - {name: $.json.copy_foo, src: $.json.foo}
 out:

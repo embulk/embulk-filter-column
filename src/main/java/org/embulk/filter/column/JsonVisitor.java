@@ -359,8 +359,10 @@ public class JsonVisitor
         if (this.jsonAddColumns.containsKey(rootPath)) {
             for (JsonColumn jsonColumn : this.jsonAddColumns.get(rootPath).values()) {
                 int i = jsonColumn.getTailIndex().intValue();
-                if (0 <= i && i < size) {
-                    continue; // possibly already visit, avoid duplication
+                if (i < size) {
+                    // index for add_columns must be larger than size
+                    // just skip because we can not raise ConfigException beforehand for flexible JSON
+                    continue;
                 }
                 int src = jsonColumn.getSrcTailIndex().intValue();
                 Value v = (src < arrayValue.size() ? arrayValue.get(src) : null);
@@ -423,7 +425,9 @@ public class JsonVisitor
             for (JsonColumn jsonColumn : this.jsonAddColumns.get(rootPath).values()) {
                 Value k = jsonColumn.getTailNameValue();
                 if (map.containsKey(k)) {
-                    continue; // possibly already visit, avoid duplication
+                    // key must be different with already existing one for add_columns
+                    // just skip because we can not raise ConfigException beforehand for flexible JSON
+                    continue;
                 }
                 Value src = jsonColumn.getSrcTailNameValue();
                 Value v = map.get(src);
