@@ -337,19 +337,26 @@ public class JsonVisitor
         }
         else if (this.jsonColumns.containsKey(rootPath)) {
             for (JsonColumn jsonColumn : this.jsonColumns.get(rootPath).values()) {
-                int src = jsonColumn.getSrcTailIndex().intValue();
-                if (src == JsonColumn.WILDCARD_INDEX) {
-                    for (int i = 0; i < size; i++) {
-                        Value v = arrayValue.get(i);
-                        if (v == null) {
-                            v = jsonColumn.getDefaultValue();
+                int i = jsonColumn.getTailIndex().intValue();
+                if (i == JsonColumn.WILDCARD_INDEX) {
+                    for (i = 0; i < size; i++) {
+                        int src = jsonColumn.getSrcTailIndex().intValue();
+                        if (src == JsonColumn.WILDCARD_INDEX) {
+                            Value v = arrayValue.get(i);
+                            if (v == null) {
+                                v = jsonColumn.getDefaultValue();
+                            }
+                            String newPath = jsonColumn.getPath(); // == newArrayJsonPath(rootPath, i); // [*]
+                            Value visited = visit(newPath, v);
+                            newValue.add(j++, visited == null ? ValueFactory.newNil() : visited);
                         }
-                        String newPath = jsonColumn.getPath();
-                        Value visited = visit(newPath, v);
-                        newValue.add(j++, visited == null ? ValueFactory.newNil() : visited);
+                        else {
+                            assert(false); // not supported yet
+                        }
                     }
                 }
                 else {
+                    int src = jsonColumn.getSrcTailIndex().intValue();
                     Value v = (src < arrayValue.size() ? arrayValue.get(src) : null);
                     if (v == null) {
                         v = jsonColumn.getDefaultValue();

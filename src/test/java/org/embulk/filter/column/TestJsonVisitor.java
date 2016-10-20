@@ -153,24 +153,24 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void configException_Columns()
+    public void assertDoNotEndsWithArrayWildcard_AddColumns()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
-                "columns:",
-                "  - {name: \"$.json1.b.b[*]\"}");
+                "add_columns:",
+                "  - {name: \"$.json1.b.b[*]\", type: json, default: []}");
         Schema inputSchema = Schema.builder().build();
         // b[*] should be written as b
         jsonVisitor(task, inputSchema);
     }
 
     @Test(expected = ConfigException.class)
-    public void buildJsonAddColumns_ConfigException()
+    public void assertDoNotEndsWithArrayWildcard_Columns()
     {
         PluginTask task = taskFromYamlString(
                 "type: column",
-                "add_columns:",
-                "  - {name: \"$.json1.b.b[*]\", type: json, default: []}");
+                "columns:",
+                "  - {name: \"$.json1.b.b[*]\"}");
         Schema inputSchema = Schema.builder().build();
         // b[*] should be written as b
         jsonVisitor(task, inputSchema);
@@ -217,18 +217,6 @@ public class TestJsonVisitor
             assertEquals("$['json1']['a']['copy_array'][1]", keys[0]);
             assertEquals("$['json1']['a']['copy_array'][1]", values[0].getPath());
         }
-    }
-
-    @Test(expected = ConfigException.class)
-    public void buildJsonColumns_ConfigException()
-    {
-        PluginTask task = taskFromYamlString(
-                "type: column",
-                "columns:",
-                "  - {name: \"$.json1.b.b[*]\"}");
-        Schema inputSchema = Schema.builder().build();
-        // b[*] should be written as b
-        jsonVisitor(task, inputSchema);
     }
 
     @Test
@@ -445,6 +433,7 @@ public class TestJsonVisitor
                 "  - {name: \"$.json1.k1[1]\", src: \"$.json1.k1[0]\"}",
                 "  - {name: \"$.json1.k2[0]\"}",
                 "  - {name: \"$.json1.k3[*].k1\"}",
+                "  - {name: \"$.json1.k3[*].k3\", src: \"$.json1.k3[*].k1\"}",
                 "  - {name: \"$.json1.k4[*].k1\", type: string, default: v}",
                 "  - {name: \"$.json1.k5[0].k1\", type: string, default: v}");
         Schema inputSchema = Schema.builder()
@@ -464,7 +453,7 @@ public class TestJsonVisitor
                 k3, ValueFactory.newArray(ValueFactory.newMap(k1, v, k2, v)));
 
         MapValue visited = subject.visit("$['json1']", map).asMapValue();
-        assertEquals("{\"k1\":[{\"k1\":\"v\"}],\"k2\":[\"v\"],\"k3\":[{\"k1\":\"v\"}],\"k4\":[],\"k5\":[{\"k1\":\"v\"}]}", visited.toString());
+        assertEquals("{\"k1\":[{\"k1\":\"v\"}],\"k2\":[\"v\"],\"k3\":[{\"k1\":\"v\",\"k3\":\"v\"}],\"k4\":[],\"k5\":[{\"k1\":\"v\"}]}", visited.toString());
     }
 
     @Test
