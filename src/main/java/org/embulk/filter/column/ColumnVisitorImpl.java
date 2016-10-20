@@ -1,7 +1,8 @@
 package org.embulk.filter.column;
 
-import io.github.medjed.jsonpathcompiler.expressions.Utils;
 import com.google.common.base.Throwables;
+
+import io.github.medjed.jsonpathcompiler.expressions.Utils;
 
 import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;

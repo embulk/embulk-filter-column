@@ -5,8 +5,8 @@ import io.github.medjed.jsonpathcompiler.expressions.path.ArrayIndexOperation;
 import io.github.medjed.jsonpathcompiler.expressions.path.ArrayPathToken;
 import io.github.medjed.jsonpathcompiler.expressions.path.PathCompiler;
 import io.github.medjed.jsonpathcompiler.expressions.path.PathToken;
-import io.github.medjed.jsonpathcompiler.expressions.path.RootPathToken;
 import io.github.medjed.jsonpathcompiler.expressions.path.PropertyPathToken;
+import io.github.medjed.jsonpathcompiler.expressions.path.RootPathToken;
 import io.github.medjed.jsonpathcompiler.expressions.path.WildcardPathToken;
 import org.embulk.config.ConfigException;
 import org.embulk.spi.type.Type;
@@ -33,7 +33,7 @@ public class JsonColumn
     private StringValue srcParentPathValue = null;
     private Value srcTailNameValue = null;
 
-    public static int WILDCARD_INDEX = -1;
+    public static final int WILDCARD_INDEX = -1;
 
     public JsonColumn(String path, Type type)
     {

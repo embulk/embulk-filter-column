@@ -3,6 +3,8 @@ package org.embulk.filter.column;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
+import io.github.medjed.jsonpathcompiler.expressions.path.PathCompiler;
+
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigException;
@@ -26,8 +28,6 @@ import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 
 import java.util.List;
-
-import io.github.medjed.jsonpathcompiler.expressions.path.PathCompiler;
 
 public class ColumnFilterPlugin implements FilterPlugin
 {

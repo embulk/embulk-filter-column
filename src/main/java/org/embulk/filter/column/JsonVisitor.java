@@ -351,7 +351,7 @@ public class JsonVisitor
                             newValue.add(j++, visited == null ? ValueFactory.newNil() : visited);
                         }
                         else {
-                            assert(false); // not supported yet
+                            assert (false); // not supported yet
                         }
                     }
                 }

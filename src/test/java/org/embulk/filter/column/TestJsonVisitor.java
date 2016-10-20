@@ -1,7 +1,6 @@
 package org.embulk.filter.column;
 
 import org.embulk.config.ConfigException;
-import org.embulk.EmbulkTestRuntime;
 import org.embulk.config.ConfigLoader;
 import org.embulk.config.ConfigSource;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
@@ -21,14 +20,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
 public class TestJsonVisitor
 {
     @Rule
-    public EmbulkTestRuntime runtime = new EmbulkTestRuntime();
+    public org.embulk.EmbulkTestRuntime runtime = new org.embulk.EmbulkTestRuntime();
 
     @Before
     public void createResource()
@@ -720,7 +718,8 @@ public class TestJsonVisitor
     }
 
     @Test(expected = ConfigException.class)
-    public void configException_MultiProperties() {
+    public void configException_MultiProperties()
+    {
         PluginTask task = taskFromYamlString(
                 "type: column",
                 "columns:",

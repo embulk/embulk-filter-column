@@ -14,6 +14,8 @@ import org.embulk.config.ConfigException;
 
 public class JsonPathUtil
 {
+    private JsonPathUtil() {}
+
     public static void assertJsonPathFormat(String path)
     {
         Path compiledPath;
