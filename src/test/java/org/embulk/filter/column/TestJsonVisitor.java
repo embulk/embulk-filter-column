@@ -698,7 +698,6 @@ public class TestJsonVisitor
         assertEquals("{\"k____1\":[{\"k____1\":\"v\"}],\"k_2\":{\"k_2\":\"v\"}}", visited.toString());
     }
 
-    /*
     @Test
     public void visit_withColumnNameIncludingSingleQuotes()
     {
@@ -719,7 +718,6 @@ public class TestJsonVisitor
         MapValue visited = subject.visit("$['\\'json1']", map).asMapValue();
         assertEquals("{\"k1\":\"v\"}", visited.toString());
     }
-    */
 
     @Test(expected = ConfigException.class)
     public void configException_MultiProperties() {
