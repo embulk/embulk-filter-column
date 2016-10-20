@@ -145,10 +145,6 @@ I mean that below example does not work yet (`$.payload.foo` and `$.payload.bar`
 - {name: $.payload.foo.dest, src: $.payload.bar.src}
 ```
 
-## ToDo
-
-* Write test
-
 ## Development
 
 Run example:
