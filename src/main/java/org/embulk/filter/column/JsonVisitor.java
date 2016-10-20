@@ -5,6 +5,7 @@ import io.github.medjed.jsonpathcompiler.expressions.Path;
 import io.github.medjed.jsonpathcompiler.expressions.path.ArrayPathToken;
 import io.github.medjed.jsonpathcompiler.expressions.path.PathCompiler;
 import io.github.medjed.jsonpathcompiler.expressions.path.PathToken;
+import io.github.medjed.jsonpathcompiler.expressions.path.WildcardPathToken;
 import org.embulk.config.ConfigException;
 import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
@@ -286,7 +287,7 @@ public class JsonVisitor
             partialPath.append(parts.getPathFragment());
             PathToken next = parts.next();
             JsonColumn jsonColumn;
-            if (next instanceof ArrayPathToken) {
+            if (next instanceof ArrayPathToken || next instanceof WildcardPathToken) {
                 jsonColumn = new JsonColumn(partialPath.toString(), Types.JSON, ValueFactory.newArray(new Value[0], false));
             }
             else {

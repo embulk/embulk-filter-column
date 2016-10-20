@@ -414,7 +414,8 @@ public class TestJsonVisitor
                 "add_columns:",
                 "  - {name: \"$.json1.k1[1]\", src: \"$.json1.k1[0]\"}",
                 "  - {name: \"$.json1.k3[*].k2\", type: string, default: v}",
-                "  - {name: \"$.json1.k4[0].k1\", type: string, default: v}");
+                "  - {name: \"$.json1.k4[*].k1\", type: string, default: v}",
+                "  - {name: \"$.json1.k5[0].k1\", type: string, default: v}");
         Schema inputSchema = Schema.builder()
                 .add("json1", JSON)
                 .add("json2", JSON)
@@ -432,7 +433,7 @@ public class TestJsonVisitor
                 k3, ValueFactory.newArray(ValueFactory.newMap(k1, v)));
 
         MapValue visited = subject.visit("$['json1']", map).asMapValue();
-        assertEquals("{\"k1\":[{\"k1\":\"v\"},{\"k1\":\"v\"}],\"k2\":[\"v\",\"v\"],\"k3\":[{\"k1\":\"v\",\"k2\":\"v\"}],\"k4\":[{\"k1\":\"v\"}]}", visited.toString());
+        assertEquals("{\"k1\":[{\"k1\":\"v\"},{\"k1\":\"v\"}],\"k2\":[\"v\",\"v\"],\"k3\":[{\"k1\":\"v\",\"k2\":\"v\"}],\"k4\":[],\"k5\":[{\"k1\":\"v\"}]}", visited.toString());
     }
 
     @Test
@@ -444,7 +445,8 @@ public class TestJsonVisitor
                 "  - {name: \"$.json1.k1[1]\", src: \"$.json1.k1[0]\"}",
                 "  - {name: \"$.json1.k2[0]\"}",
                 "  - {name: \"$.json1.k3[*].k1\"}",
-                "  - {name: \"$.json1.k4[0].k1\", type: string, default: v}");
+                "  - {name: \"$.json1.k4[*].k1\", type: string, default: v}",
+                "  - {name: \"$.json1.k5[0].k1\", type: string, default: v}");
         Schema inputSchema = Schema.builder()
                 .add("json1", JSON)
                 .add("json2", JSON)
@@ -462,7 +464,7 @@ public class TestJsonVisitor
                 k3, ValueFactory.newArray(ValueFactory.newMap(k1, v, k2, v)));
 
         MapValue visited = subject.visit("$['json1']", map).asMapValue();
-        assertEquals("{\"k1\":[{\"k1\":\"v\"}],\"k2\":[\"v\"],\"k3\":[{\"k1\":\"v\"}],\"k4\":[{\"k1\":\"v\"}]}", visited.toString());
+        assertEquals("{\"k1\":[{\"k1\":\"v\"}],\"k2\":[\"v\"],\"k3\":[{\"k1\":\"v\"}],\"k4\":[],\"k5\":[{\"k1\":\"v\"}]}", visited.toString());
     }
 
     @Test
