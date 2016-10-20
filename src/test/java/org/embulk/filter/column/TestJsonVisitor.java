@@ -384,23 +384,26 @@ public class TestJsonVisitor
                 "type: column",
                 "drop_columns:",
                 "  - {name: \"$.json1.k1[0].k1\"}",
-                "  - {name: \"$.json1.k2[*]\"}"); // ending with [*] is allowed for drop_columns, but not for others
+                "  - {name: \"$.json1.k2[*]\"}", // ending with [*] is allowed for drop_columns, but not for others
+                "  - {name: \"$.json1.k3[*].k1\"}");
         Schema inputSchema = Schema.builder()
                 .add("json1", JSON)
                 .add("json2", JSON)
                 .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
-        // {"k1":[{"k1":"v"}[,"k2":["v","v"]}
+        // {"k1":[{"k1":"v"}],"k2":["v","v"],"k3":[{"k3":"v"}]}
         Value k1 = ValueFactory.newString("k1");
         Value k2 = ValueFactory.newString("k2");
+        Value k3 = ValueFactory.newString("k3");
         Value v = ValueFactory.newString("v");
         Value map = ValueFactory.newMap(
                 k1, ValueFactory.newArray(ValueFactory.newMap(k1, v)),
-                k2, ValueFactory.newArray(v, v));
+                k2, ValueFactory.newArray(v, v),
+                k3, ValueFactory.newArray(ValueFactory.newMap(k1, v)));
 
         MapValue visited = subject.visit("$['json1']", map).asMapValue();
-        assertEquals("{\"k1\":[{}],\"k2\":[]}", visited.toString());
+        assertEquals("{\"k1\":[{}],\"k2\":[],\"k3\":[{}]}", visited.toString());
     }
 
     @Test
@@ -410,23 +413,26 @@ public class TestJsonVisitor
                 "type: column",
                 "add_columns:",
                 "  - {name: \"$.json1.k1[1]\", src: \"$.json1.k1[0]\"}",
-                "  - {name: \"$.json1.k3[0].k3\", type: string, default: v}");
+                "  - {name: \"$.json1.k3[*].k2\", type: string, default: v}",
+                "  - {name: \"$.json1.k4[0].k1\", type: string, default: v}");
         Schema inputSchema = Schema.builder()
                 .add("json1", JSON)
                 .add("json2", JSON)
                 .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
-        // {"k1":[{"k1":"v"}],"k2":["v","v"]}
+        // {"k1":[{"k1":"v"}],"k2":["v","v"],"k3":[{"k1":"v"}]}
         Value k1 = ValueFactory.newString("k1");
         Value k2 = ValueFactory.newString("k2");
+        Value k3 = ValueFactory.newString("k3");
         Value v = ValueFactory.newString("v");
         Value map = ValueFactory.newMap(
                 k1, ValueFactory.newArray(ValueFactory.newMap(k1, v)),
-                k2, ValueFactory.newArray(v, v));
+                k2, ValueFactory.newArray(v, v),
+                k3, ValueFactory.newArray(ValueFactory.newMap(k1, v)));
 
         MapValue visited = subject.visit("$['json1']", map).asMapValue();
-        assertEquals("{\"k1\":[{\"k1\":\"v\"},{\"k1\":\"v\"}],\"k2\":[\"v\",\"v\"],\"k3\":[{\"k3\":\"v\"}]}", visited.toString());
+        assertEquals("{\"k1\":[{\"k1\":\"v\"},{\"k1\":\"v\"}],\"k2\":[\"v\",\"v\"],\"k3\":[{\"k1\":\"v\",\"k2\":\"v\"}],\"k4\":[{\"k1\":\"v\"}]}", visited.toString());
     }
 
     @Test
@@ -437,23 +443,26 @@ public class TestJsonVisitor
                 "columns:",
                 "  - {name: \"$.json1.k1[1]\", src: \"$.json1.k1[0]\"}",
                 "  - {name: \"$.json1.k2[0]\"}",
-                "  - {name: \"$.json1.k3[0].k3\", type: string, default: v}");
+                "  - {name: \"$.json1.k3[*].k1\"}",
+                "  - {name: \"$.json1.k4[0].k1\", type: string, default: v}");
         Schema inputSchema = Schema.builder()
                 .add("json1", JSON)
                 .add("json2", JSON)
                 .build();
         JsonVisitor subject = jsonVisitor(task, inputSchema);
 
-        // {"k1":[{"k1":"v"},"v"],"k2":["v","v"]}
+        // {"k1":[{"k1":"v"},"v"],"k2":["v","v"],"k3":[{"k1":"v","k2":"v"}]}
         Value k1 = ValueFactory.newString("k1");
         Value k2 = ValueFactory.newString("k2");
+        Value k3 = ValueFactory.newString("k3");
         Value v = ValueFactory.newString("v");
         Value map = ValueFactory.newMap(
                 k1, ValueFactory.newArray(ValueFactory.newMap(k1, v), v),
-                k2, ValueFactory.newArray(v, v));
+                k2, ValueFactory.newArray(v, v),
+                k3, ValueFactory.newArray(ValueFactory.newMap(k1, v, k2, v)));
 
         MapValue visited = subject.visit("$['json1']", map).asMapValue();
-        assertEquals("{\"k1\":[{\"k1\":\"v\"}],\"k2\":[\"v\"],\"k3\":[{\"k3\":\"v\"}]}", visited.toString());
+        assertEquals("{\"k1\":[{\"k1\":\"v\"}],\"k2\":[\"v\"],\"k3\":[{\"k1\":\"v\"}],\"k4\":[{\"k1\":\"v\"}]}", visited.toString());
     }
 
     @Test

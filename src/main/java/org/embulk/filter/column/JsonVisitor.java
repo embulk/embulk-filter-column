@@ -337,15 +337,26 @@ public class JsonVisitor
         else if (this.jsonColumns.containsKey(rootPath)) {
             for (JsonColumn jsonColumn : this.jsonColumns.get(rootPath).values()) {
                 int src = jsonColumn.getSrcTailIndex().intValue();
-                Value v = (src < arrayValue.size() ? arrayValue.get(src) : null);
-                if (v == null) {
-                    v = jsonColumn.getDefaultValue();
+                if (src == JsonColumn.WILDCARD_INDEX) {
+                    for (int i = 0; i < size; i++) {
+                        Value v = arrayValue.get(i);
+                        if (v == null) {
+                            v = jsonColumn.getDefaultValue();
+                        }
+                        String newPath = jsonColumn.getPath();
+                        Value visited = visit(newPath, v);
+                        newValue.add(j++, visited == null ? ValueFactory.newNil() : visited);
+                    }
                 }
-                String newPath = jsonColumn.getPath();
-                Value visited = visit(newPath, v);
-                // int i = jsonColumn.getTailIndex().intValue();
-                // index is shifted, so j++ is used.
-                newValue.add(j++, visited == null ? ValueFactory.newNil() : visited);
+                else {
+                    Value v = (src < arrayValue.size() ? arrayValue.get(src) : null);
+                    if (v == null) {
+                        v = jsonColumn.getDefaultValue();
+                    }
+                    String newPath = jsonColumn.getPath();
+                    Value visited = visit(newPath, v);
+                    newValue.add(j++, visited == null ? ValueFactory.newNil() : visited);
+                }
             }
         }
         else {
@@ -358,7 +369,7 @@ public class JsonVisitor
         if (this.jsonAddColumns.containsKey(rootPath)) {
             for (JsonColumn jsonColumn : this.jsonAddColumns.get(rootPath).values()) {
                 int i = jsonColumn.getTailIndex().intValue();
-                if (i < size) {
+                if (i == JsonColumn.WILDCARD_INDEX || i < size) {
                     // index for add_columns must be larger than size
                     // just skip because we can not raise ConfigException beforehand for flexible JSON
                     continue;
