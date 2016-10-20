@@ -7,6 +7,7 @@ import io.github.medjed.jsonpathcompiler.expressions.path.PathCompiler;
 import io.github.medjed.jsonpathcompiler.expressions.path.PathToken;
 import io.github.medjed.jsonpathcompiler.expressions.path.RootPathToken;
 import io.github.medjed.jsonpathcompiler.expressions.path.PropertyPathToken;
+import io.github.medjed.jsonpathcompiler.expressions.path.WildcardPathToken;
 import org.embulk.config.ConfigException;
 import org.embulk.spi.type.Type;
 import org.msgpack.value.StringValue;
@@ -31,6 +32,8 @@ public class JsonColumn
     private Long srcTailIndex = null;
     private StringValue srcParentPathValue = null;
     private Value srcTailNameValue = null;
+
+    public static int WILDCARD_INDEX = -1;
 
     public JsonColumn(String path, Type type)
     {
@@ -96,6 +99,9 @@ public class JsonColumn
             ArrayIndexOperation arrayIndexOperation = ((ArrayPathToken) tail).getArrayIndexOperation();
             JsonPathUtil.assertSupportedArrayPathToken(arrayIndexOperation, path);
             return arrayIndexOperation.indexes().get(0).longValue();
+        }
+        else if (tail instanceof WildcardPathToken) {
+            return new Long(WILDCARD_INDEX);
         }
         else {
             return null;
