@@ -100,8 +100,8 @@ public class TestColumnVisitorImpl
                 .add("remove_me", STRING)
                 .build();
         List<Object[]> records = filter(task, inputSchema,
-                Timestamp.ofEpochSecond(0), "string", new Boolean(true), new Long(0), new Double(0.5), ValueFactory.newString("json"), "remove_me",
-                Timestamp.ofEpochSecond(0), "string", new Boolean(true), new Long(0), new Double(0.5), ValueFactory.newString("json"), "remove_me");
+                Timestamp.ofEpochSecond(0), "string", Boolean.valueOf(true), Long.valueOf(0), Double.valueOf(0.5), ValueFactory.newString("json"), "remove_me",
+                Timestamp.ofEpochSecond(0), "string", Boolean.valueOf(true), Long.valueOf(0), Double.valueOf(0.5), ValueFactory.newString("json"), "remove_me");
 
         assertEquals(2, records.size());
 
@@ -111,9 +111,9 @@ public class TestColumnVisitorImpl
             assertEquals(6, record.length);
             assertEquals(Timestamp.ofEpochSecond(0), record[0]);
             assertEquals("string", record[1]);
-            assertEquals(new Boolean(true), record[2]);
-            assertEquals(new Long(0), record[3]);
-            assertEquals(new Double(0.5), record[4]);
+            assertEquals(Boolean.valueOf(true), record[2]);
+            assertEquals(Long.valueOf(0), record[3]);
+            assertEquals(Double.valueOf(0.5), record[4]);
             assertEquals(ValueFactory.newString("json"), record[5]);
         }
     }
@@ -140,7 +140,7 @@ public class TestColumnVisitorImpl
                 .add("remove_me", STRING)
                 .build();
         List<Object[]> records = filter(task, inputSchema,
-                Timestamp.ofEpochSecond(1436745600), "string", new Boolean(true), new Long(0), new Double(0.5), ValueFactory.newString("json"), "remove_me",
+                Timestamp.ofEpochSecond(1436745600), "string", Boolean.valueOf(true), Long.valueOf(0), Double.valueOf(0.5), ValueFactory.newString("json"), "remove_me",
                 null, null, null, null, null, null, "remove_me");
 
         assertEquals(2, records.size());
@@ -151,9 +151,9 @@ public class TestColumnVisitorImpl
             assertEquals(6, record.length);
             assertEquals(Timestamp.ofEpochSecond(1436745600), record[0]);
             assertEquals("string", record[1]);
-            assertEquals(new Boolean(true), record[2]);
-            assertEquals(new Long(0), record[3]);
-            assertEquals(new Double(0.5), record[4]);
+            assertEquals(Boolean.valueOf(true), record[2]);
+            assertEquals(Long.valueOf(0), record[3]);
+            assertEquals(Double.valueOf(0.5), record[4]);
             assertEquals(ValueFactory.newString("json"), record[5]);
         }
         {
@@ -161,9 +161,9 @@ public class TestColumnVisitorImpl
             assertEquals(6, record.length);
             assertEquals(Timestamp.ofEpochSecond(1436745600), record[0]);
             assertEquals("string", record[1]);
-            assertEquals(new Boolean(true), record[2]);
-            assertEquals(new Long(0), record[3]);
-            assertEquals(new Double(0.5), record[4]);
+            assertEquals(Boolean.valueOf(true), record[2]);
+            assertEquals(Long.valueOf(0), record[3]);
+            assertEquals(Double.valueOf(0.5), record[4]);
             assertEquals("{\"foo\":\"bar\"}", record[5].toString());
         }
     }
@@ -213,7 +213,7 @@ public class TestColumnVisitorImpl
                 .add("keep_me", STRING)
                 .build();
         List<Object[]> records = filter(task, inputSchema,
-                Timestamp.ofEpochSecond(1436745600), "string", new Boolean(true), new Long(0), new Double(0.5), ValueFactory.newString("json"), "keep_me",
+                Timestamp.ofEpochSecond(1436745600), "string", Boolean.valueOf(true), Long.valueOf(0), Double.valueOf(0.5), ValueFactory.newString("json"), "keep_me",
                 null, null, null, null, null, null, "keep_me");
 
         assertEquals(2, records.size());
@@ -259,9 +259,9 @@ public class TestColumnVisitorImpl
             assertEquals("keep_me", record[0]);
             assertEquals(Timestamp.ofEpochSecond(1436745600), record[1]);
             assertEquals("string", record[2]);
-            assertEquals(new Boolean(true), record[3]);
-            assertEquals(new Long(0), record[4]);
-            assertEquals(new Double(0.5), record[5]);
+            assertEquals(Boolean.valueOf(true), record[3]);
+            assertEquals(Long.valueOf(0), record[4]);
+            assertEquals(Double.valueOf(0.5), record[5]);
             assertEquals("{\"foo\":\"bar\"}", record[6].toString());
         }
     }

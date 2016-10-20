@@ -72,8 +72,8 @@ public class TestJsonColumn
         assertEquals(null, JsonColumn.getTailIndex("$['foo'].bar.baz"));
         assertEquals(null, JsonColumn.getTailIndex("$.foo.bar"));
         assertEquals(null, JsonColumn.getTailIndex("$.foo"));
-        assertEquals(new Long(1), JsonColumn.getTailIndex("$.foo[0][1]"));
-        assertEquals(new Long(0), JsonColumn.getTailIndex("$.foo[0]"));
-        assertEquals(new Long(0), JsonColumn.getTailIndex("$[0]"));
+        assertEquals(Long.valueOf(1), JsonColumn.getTailIndex("$.foo[0][1]"));
+        assertEquals(Long.valueOf(0), JsonColumn.getTailIndex("$.foo[0]"));
+        assertEquals(Long.valueOf(0), JsonColumn.getTailIndex("$[0]"));
     }
 }

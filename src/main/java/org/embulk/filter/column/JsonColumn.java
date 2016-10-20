@@ -101,7 +101,7 @@ public class JsonColumn
             return arrayIndexOperation.indexes().get(0).longValue();
         }
         else if (tail instanceof WildcardPathToken) {
-            return new Long(WILDCARD_INDEX);
+            return Long.valueOf(WILDCARD_INDEX);
         }
         else {
             return null;

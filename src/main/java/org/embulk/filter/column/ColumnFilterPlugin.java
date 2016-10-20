@@ -2,16 +2,13 @@ package org.embulk.filter.column;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-
 import io.github.medjed.jsonpathcompiler.expressions.path.PathCompiler;
-
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
 import org.embulk.config.TaskSource;
-
 import org.embulk.spi.Column;
 import org.embulk.spi.Exec;
 import org.embulk.spi.FilterPlugin;
@@ -23,7 +20,6 @@ import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfigException;
 import org.embulk.spi.time.TimestampParser;
 import org.embulk.spi.type.Type;
-
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 
@@ -95,11 +91,7 @@ public class ColumnFilterPlugin implements FilterPlugin
 
     private void configure(PluginTask task)
     {
-        List<ColumnConfig> columns = task.getColumns();
-        List<ColumnConfig> addColumns = task.getAddColumns();
-        List<ColumnConfig> dropColumns = task.getDropColumns();
-
-        if (columns.size() > 0 && dropColumns.size() > 0) {
+        if (task.getColumns().size() > 0 && task.getDropColumns().size() > 0) {
             throw new ConfigException("Either of \"columns\", \"drop_columns\" can be specified.");
         }
     }

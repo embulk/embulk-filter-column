@@ -127,7 +127,7 @@ public class ColumnVisitorImpl implements ColumnVisitor
         }
         else if (type instanceof LongType) {
             if (columnConfig.getDefault().isPresent()) {
-                return new Long(columnConfig.getDefault().get().toString());
+                return Long.valueOf(columnConfig.getDefault().get().toString());
             }
         }
         else if (type instanceof DoubleType) {
