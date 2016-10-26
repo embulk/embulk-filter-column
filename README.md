@@ -25,15 +25,15 @@ A filter plugin for Embulk to filter out columns
 - **default_timestamp_format**: default timestamp format for timestamp columns (string, default is `%Y-%m-%d %H:%M:%S.%N %z`)
 - **default_timezone**: default timezone for timestamp columns (string, default is `UTC`)
 
-## Example (columns)
+## Example - columns
 
 Say input.csv is as follows:
 
 ```
 time,id,key,score
-2015-07-13,0,Vqjht6YEUBsMPXmoW1iOGFROZF27pBzz0TUkOKeDXEY,1370
-2015-07-13,1,VmjbjAA0tOoSEPv_vKAGMtD_0aXZji0abGe7_VXHmUQ,3962
-2015-07-13,2,C40P5H1WcBx-aWFDJCI8th6QPEI2DOUgupt_gB8UutE,7323
+2015-07-13,0,Vqjht6YE,1370
+2015-07-13,1,VmjbjAA0,3962
+2015-07-13,2,C40P5H1W,7323
 ```
 
 ```yaml
@@ -48,22 +48,23 @@ filters:
 reduces columns to only `time`, `id`, and `key` columns as:
 
 ```
-2015-07-13,0,Vqjht6YEUBsMPXmoW1iOGFROZF27pBzz0TUkOKeDXEY
-2015-07-13,1,VmjbjAA0tOoSEPv_vKAGMtD_0aXZji0abGe7_VXHmUQ
-2015-07-13,2,C40P5H1WcBx-aWFDJCI8th6QPEI2DOUgupt_gB8UutE
+time,id,key
+2015-07-13,0,Vqjht6YE
+2015-07-13,1,VmjbjAA0
+2015-07-13,2,C40P5H1W
 ```
 
 Note that column types are automatically retrieved from input data (inputSchema).
 
-## Example (add_columns)
+## Example - add_columns
 
 Say input.csv is as follows:
 
 ```
 time,id,key,score
-2015-07-13,0,Vqjht6YEUBsMPXmoW1iOGFROZF27pBzz0TUkOKeDXEY,1370
-2015-07-13,1,VmjbjAA0tOoSEPv_vKAGMtD_0aXZji0abGe7_VXHmUQ,3962
-2015-07-13,2,C40P5H1WcBx-aWFDJCI8th6QPEI2DOUgupt_gB8UutE,7323
+2015-07-13,0,Vqjht6YE,1370
+2015-07-13,1,VmjbjAA0,3962
+2015-07-13,2,C40P5H1W,7323
 ```
 
 ```yaml
@@ -77,20 +78,21 @@ filters:
 add `d` column, and `copy_id` column which is a copy of `id` column as:
 
 ```
-2015-07-13,0,Vqjht6YEUBsMPXmoW1iOGFROZF27pBzz0TUkOKeDXEY,1370,2015-07-13,0
-2015-07-13,1,VmjbjAA0tOoSEPv_vKAGMtD_0aXZji0abGe7_VXHmUQ,3962,2015-07-13,1
-2015-07-13,2,C40P5H1WcBx-aWFDJCI8th6QPEI2DOUgupt_gB8UutE,7323,2015-07,13,2
+time,id,key,score,d,copy_id
+2015-07-13,0,Vqjht6YE,1370,2015-07-13,0
+2015-07-13,1,VmjbjAA0,3962,2015-07-13,1
+2015-07-13,2,C40P5H1W,7323,2015-07,13,2
 ```
 
-## Example (drop_columns)
+## Example - drop_columns
 
 Say input.csv is as follows:
 
 ```
 time,id,key,score
-2015-07-13,0,Vqjht6YEUBsMPXmoW1iOGFROZF27pBzz0TUkOKeDXEY,1370
-2015-07-13,1,VmjbjAA0tOoSEPv_vKAGMtD_0aXZji0abGe7_VXHmUQ,3962
-2015-07-13,2,C40P5H1WcBx-aWFDJCI8th6QPEI2DOUgupt_gB8UutE,7323
+2015-07-13,0,Vqjht6YE,1370
+2015-07-13,1,VmjbjAA0,3962
+2015-07-13,2,C40P5H1W,7323
 ```
 
 ```yaml
@@ -104,9 +106,10 @@ filters:
 drop `time` and `id` columns as:
 
 ```
-Vqjht6YEUBsMPXmoW1iOGFROZF27pBzz0TUkOKeDXEY,1370
-VmjbjAA0tOoSEPv_vKAGMtD_0aXZji0abGe7_VXHmUQ,3962
-C40P5H1WcBx-aWFDJCI8th6QPEI2DOUgupt_gB8UutE,7323
+key,score
+Vqjht6YE,1370
+VmjbjAA0,3962
+C40P5H1W,7323
 ```
 
 ## JSONPath
