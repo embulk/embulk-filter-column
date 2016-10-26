@@ -109,7 +109,7 @@ VmjbjAA0tOoSEPv_vKAGMtD_0aXZji0abGe7_VXHmUQ,3962
 C40P5H1WcBx-aWFDJCI8th6QPEI2DOUgupt_gB8UutE,7323
 ```
 
-## JSONPath (like) name
+## JSONPath
 
 For type: json column, you can specify [JSONPath](http://goessner.net/articles/JsonPath/) for column's name as:
 
@@ -128,12 +128,11 @@ EXAMPLE:
 
 NOTE:
 
-* JSONPath syntax is not fully supported
-* `type: timesatmp` for `add_columns` or `columns` is not available because Embulk's `type: json` cannot have timestamp column
+1) JSONPath syntax is not fully supported
 
-NOTE:
+2) `type: timesatmp` for `add_columns` or `columns` is not available because Embulk's `type: json` cannot have timestamp column inside
 
-Rename or copy of json paths by `src` option is only partially supported yet. The parent json path must be same like:
+3) Rename or copy of json paths by `src` option is only partially supported yet. The parent json path must be same like:
 
 ```
 - {name: $.payload.foo.dest, src: $.payload.foo.src}
