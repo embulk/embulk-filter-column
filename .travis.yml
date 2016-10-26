@@ -1,7 +1,7 @@
 language: java
 jdk:
   - openjdk7
-  - oraclejdk7
+  # - oraclejdk7 # hmm, unstable
   - oraclejdk8
 script:
   - travis_retry ./gradlew test
