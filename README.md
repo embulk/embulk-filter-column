@@ -129,13 +129,16 @@ EXAMPLE:
 * [example/add_columns.yml](example/add_columns.yml)
 * [example/drop_columns.yml](example/drop_columns.yml)
 
-NOTE:
+Following operators of JSONPath are not supported:
 
-1) JSONPath syntax is not fully supported
+* Multiple properties such as `['name','name']`
+* Multiple array indexes such as `[1,2]`
+* Array slice such as `[1:2]`
+* Filter expression such as `[?(<expression>)]`
 
-2) `type: timesatmp` for `add_columns` or `columns` is not available because Embulk's `type: json` cannot have timestamp column inside
+Note that `type: timesatmp` for `add_columns` or `columns` is not available because Embulk's `type: json` cannot have timestamp column inside.
 
-3) Rename or copy of json paths by `src` option is only partially supported yet. The parent json path must be same like:
+Also note that renameing or copying of json paths by `src` option is only partially supported yet. The parent json path must be same like:
 
 ```
 - {name: $.payload.foo.dest, src: $.payload.foo.src}
