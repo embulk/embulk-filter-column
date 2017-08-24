@@ -50,6 +50,8 @@ public class ColumnFilterPlugin implements FilterPlugin
         @Config("src")
         @ConfigDefault("null")
         public Optional<String> getSrc();
+
+        // See TimestampParser for format, and timezone
     }
 
     interface PluginTask extends Task, TimestampParser.Task
