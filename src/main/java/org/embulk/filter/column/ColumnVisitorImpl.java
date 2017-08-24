@@ -148,10 +148,8 @@ public class ColumnVisitorImpl implements ColumnVisitor
         }
         else if (type instanceof TimestampType) {
             if (columnConfig.getDefault().isPresent()) {
-                String time   = (String) columnConfig.getDefault().get();
-                String format = columnConfig.getFormat().or(task.getDefaultTimestampFormat());
-                DateTimeZone timezone = columnConfig.getTimeZone().or(task.getDefaultTimeZone());
-                TimestampParser parser = new TimestampParser(format, timezone);
+                String time = (String) columnConfig.getDefault().get();
+                TimestampParser parser = new TimestampParser(task, columnConfig);
                 try {
                     Timestamp defaultValue = parser.parse(time);
                     return defaultValue;

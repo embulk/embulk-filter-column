@@ -34,7 +34,7 @@ public class ColumnFilterPlugin implements FilterPlugin
     }
 
     // NOTE: This is not spi.ColumnConfig
-    interface ColumnConfig extends Task
+    interface ColumnConfig extends Task, TimestampParser.TimestampColumnOption
     {
         @Config("name")
         public String getName();
@@ -46,14 +46,6 @@ public class ColumnFilterPlugin implements FilterPlugin
         @Config("default")
         @ConfigDefault("null")
         public Optional<Object> getDefault();
-
-        @Config("format")
-        @ConfigDefault("null")
-        public Optional<String> getFormat();
-
-        @Config("timezone")
-        @ConfigDefault("null")
-        public Optional<DateTimeZone> getTimeZone();
 
         @Config("src")
         @ConfigDefault("null")
