@@ -151,7 +151,7 @@ public class ColumnVisitorImpl implements ColumnVisitor
                 String time   = (String) columnConfig.getDefault().get();
                 String format = columnConfig.getFormat().or(task.getDefaultTimestampFormat());
                 DateTimeZone timezone = columnConfig.getTimeZone().or(task.getDefaultTimeZone());
-                TimestampParser parser = new TimestampParser(task.getJRuby(), format, timezone);
+                TimestampParser parser = new TimestampParser(format, timezone);
                 try {
                     Timestamp defaultValue = parser.parse(time);
                     return defaultValue;
