@@ -20,8 +20,8 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 dependencies {
-    compile  "org.embulk:embulk-core:0.8.+"
-    provided "org.embulk:embulk-core:0.8.+"
+    compile  "org.embulk:embulk-core:0.8.29+"
+    provided "org.embulk:embulk-core:0.8.29+"
     compile  "io.github.medjed:JsonPathCompiler:0.0.12"
 
     testCompile "junit:junit:4.+"
