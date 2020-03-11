@@ -20,14 +20,14 @@ import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfigException;
 import org.embulk.spi.time.TimestampParser;
 import org.embulk.spi.type.Type;
-import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class ColumnFilterPlugin implements FilterPlugin
 {
-    private static final Logger logger = Exec.getLogger(ColumnFilterPlugin.class);
+    private static final Logger logger = LoggerFactory.getLogger(ColumnFilterPlugin.class);
 
     public ColumnFilterPlugin()
     {

@@ -10,7 +10,6 @@ import org.embulk.config.ConfigException;
 import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
 
-import org.embulk.spi.Exec;
 import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfigException;
 import org.embulk.spi.type.BooleanType;
@@ -27,6 +26,7 @@ import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +37,7 @@ import java.util.Map;
 
 public class JsonVisitor
 {
-    static final Logger logger = Exec.getLogger(ColumnFilterPlugin.class);
+    static final Logger logger = LoggerFactory.getLogger(ColumnFilterPlugin.class);
     final PluginTask task;
     final Schema inputSchema;
     final Schema outputSchema;
