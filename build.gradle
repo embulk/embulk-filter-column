@@ -11,7 +11,7 @@ repositories {
     jcenter()
 }
 
-group = ""  // TODO: Fill out an appropriate group.
+group = "io.github.sonots"
 version = "0.7.1"
 description = "A filter plugin for Embulk to filter out columns."
 
