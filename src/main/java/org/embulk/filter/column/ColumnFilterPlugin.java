@@ -20,7 +20,6 @@ import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfigException;
 import org.embulk.spi.time.TimestampParser;
 import org.embulk.spi.type.Type;
-import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 
 import java.util.List;

@@ -26,7 +26,6 @@ import org.embulk.spi.type.StringType;
 import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
 
-import org.joda.time.DateTimeZone;
 import org.msgpack.value.Value;
 import org.slf4j.Logger;
 
