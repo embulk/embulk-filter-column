@@ -9,7 +9,6 @@ import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
 
 import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
-import org.embulk.spi.Exec;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.PageReader;
 import org.embulk.spi.Schema;
@@ -26,16 +25,16 @@ import org.embulk.spi.type.StringType;
 import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
 
-import org.joda.time.DateTimeZone;
 import org.msgpack.value.Value;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
 
 public class ColumnVisitorImpl implements ColumnVisitor
 {
-    private static final Logger logger = Exec.getLogger(ColumnFilterPlugin.class);
+    private static final Logger logger = LoggerFactory.getLogger(ColumnFilterPlugin.class);
     private final PluginTask task;
     private final Schema inputSchema;
     private final Schema outputSchema;
