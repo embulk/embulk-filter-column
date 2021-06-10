@@ -1,3 +1,9 @@
+# 0.8.0 (2021-06-10)
+
+Enhancements:
+
+* Build it with the "org.embulk.embulk-plugins" Gradle plugin
+
 # 0.7.1 (2017-08-24)
 
 Enhancements:
@@ -13,14 +19,14 @@ Changes:
 
 # 0.6.0 (2016-11-05)
 
-Enhancements: 
+Enhancements:
 
 * Support bracket notation in json path (thanks to @kysnm)
 * Autocomplete ancestor json paths
 
 # 0.5.4 (2016-08-05)
 
-Enhancements: 
+Enhancements:
 
 * raise ConfigException if json path ends with `[*]` (columns and add_columns)
 

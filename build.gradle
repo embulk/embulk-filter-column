@@ -12,7 +12,7 @@ repositories {
 }
 
 group = "io.github.sonots"
-version = "0.7.1"
+version = "0.8.0"
 description = "A filter plugin for Embulk to filter out columns."
 
 sourceCompatibility = 1.8
