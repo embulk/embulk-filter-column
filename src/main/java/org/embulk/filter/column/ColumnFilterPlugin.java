@@ -1,13 +1,8 @@
 package org.embulk.filter.column;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import io.github.medjed.jsonpathcompiler.expressions.path.PathCompiler;
-import org.embulk.config.Config;
-import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
-import org.embulk.config.Task;
 import org.embulk.config.TaskSource;
 import org.embulk.spi.Column;
 import org.embulk.spi.Exec;
@@ -18,23 +13,35 @@ import org.embulk.spi.PageOutput;
 import org.embulk.spi.PageReader;
 import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfigException;
-import org.embulk.spi.time.TimestampParser;
 import org.embulk.spi.type.Type;
+import org.embulk.util.config.Config;
+import org.embulk.util.config.ConfigDefault;
+import org.embulk.util.config.ConfigMapper;
+import org.embulk.util.config.ConfigMapperFactory;
+import org.embulk.util.config.Task;
+import org.embulk.util.config.TaskMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class ColumnFilterPlugin implements FilterPlugin
 {
     private static final Logger logger = LoggerFactory.getLogger(ColumnFilterPlugin.class);
-
+    private static final ConfigMapperFactory CONFIG_MAPPER_FACTORY = ConfigMapperFactory
+            .builder()
+            .addDefaultModules()
+            .build();
+    private static final ConfigMapper CONFIG_MAPPER = CONFIG_MAPPER_FACTORY.createConfigMapper();
     public ColumnFilterPlugin()
     {
     }
 
     // NOTE: This is not spi.ColumnConfig
-    interface ColumnConfig extends Task, TimestampParser.TimestampColumnOption
+    interface ColumnConfig extends Task
     {
         @Config("name")
         public String getName();
@@ -51,10 +58,23 @@ public class ColumnFilterPlugin implements FilterPlugin
         @ConfigDefault("null")
         public Optional<String> getSrc();
 
-        // See TimestampParser for format, and timezone
+        // From org.embulk.spi.time.TimestampParser.Task.
+        @Config("timezone")
+        @ConfigDefault("null")
+        public Optional<String> getTimeZoneId();
+
+        // From org.embulk.spi.time.TimestampParser.Task.
+        @Config("format")
+        @ConfigDefault("null")
+        public Optional<String> getFormat();
+
+        // From org.embulk.spi.time.TimestampParser.Task.
+        @Config("date")
+        @ConfigDefault("null")
+        public Optional<String> getDate();
     }
 
-    interface PluginTask extends Task, TimestampParser.Task
+    interface PluginTask extends Task
     {
         @Config("columns")
         @ConfigDefault("[]")
@@ -68,14 +88,27 @@ public class ColumnFilterPlugin implements FilterPlugin
         @ConfigDefault("[]")
         public List<ColumnConfig> getDropColumns();
 
-        // See TimestampParser for default_timestamp_format, and default_timezone
+        // From org.embulk.spi.time.TimestampParser.Task.
+        @Config("default_timezone")
+        @ConfigDefault("\"UTC\"")
+        String getDefaultTimeZoneId();
+
+        // From org.embulk.spi.time.TimestampParser.Task.
+        @Config("default_timestamp_format")
+        @ConfigDefault("\"%Y-%m-%d %H:%M:%S.%N %z\"")
+        String getDefaultTimestampFormat();
+
+        // From org.embulk.spi.time.TimestampParser.Task.
+        @Config("default_date")
+        @ConfigDefault("\"1970-01-01\"")
+        String getDefaultDate();
     }
 
     @Override
     public void transaction(final ConfigSource config, final Schema inputSchema,
             final FilterPlugin.Control control)
     {
-        PluginTask task = config.loadConfig(PluginTask.class);
+        final PluginTask task = CONFIG_MAPPER.map(config, PluginTask.class);
 
         configure(task);
         Schema outputSchema = buildOutputSchema(task, inputSchema);
@@ -97,7 +130,7 @@ public class ColumnFilterPlugin implements FilterPlugin
         List<ColumnConfig> dropColumns = task.getDropColumns();
 
         // Automatically get column type from inputSchema for columns and dropColumns
-        ImmutableList.Builder<Column> builder = ImmutableList.builder();
+        List<Column> newColumns = new ArrayList<>();
         int i = 0;
         if (dropColumns.size() > 0) {
             for (Column inputColumn : inputSchema.getColumns()) {
@@ -115,7 +148,7 @@ public class ColumnFilterPlugin implements FilterPlugin
                 }
                 if (! matched) {
                     Column outputColumn = new Column(i++, name, inputColumn.getType());
-                    builder.add(outputColumn);
+                    newColumns.add(outputColumn);
                 }
             }
         }
@@ -144,11 +177,11 @@ public class ColumnFilterPlugin implements FilterPlugin
                 }
                 if (inputColumn != null) { // filter or copy column
                     Column outputColumn = new Column(i++, name, inputColumn.getType());
-                    builder.add(outputColumn);
+                    newColumns.add(outputColumn);
                 }
                 else if (type.isPresent() && defaultValue.isPresent()) { // add column
                     Column outputColumn = new Column(i++, name, type.get());
-                    builder.add(outputColumn);
+                    newColumns.add(outputColumn);
                 }
                 else {
                     throw new SchemaConfigException(String.format("columns: Column src '%s' is not found in inputSchema. Column '%s' does not have \"type\" and \"default\"", srcName, name));
@@ -158,7 +191,7 @@ public class ColumnFilterPlugin implements FilterPlugin
         else {
             for (Column column : inputSchema.getColumns()) {
                 Column outputColumn = new Column(i++, column.getName(), column.getType());
-                builder.add(outputColumn);
+                newColumns.add(outputColumn);
             }
         }
 
@@ -191,11 +224,11 @@ public class ColumnFilterPlugin implements FilterPlugin
                 }
                 if (inputColumn != null) { // copy column
                     Column outputColumn = new Column(i++, name, inputColumn.getType());
-                    builder.add(outputColumn);
+                    newColumns.add(outputColumn);
                 }
                 else if (type.isPresent() && defaultValue.isPresent()) { // add column
                     Column outputColumn = new Column(i++, name, type.get());
-                    builder.add(outputColumn);
+                    newColumns.add(outputColumn);
                 }
                 else {
                     throw new SchemaConfigException(String.format("add_columns: Column src '%s' is not found in inputSchema, Column '%s' does not have \"type\" and \"default\"", srcName, name));
@@ -203,14 +236,15 @@ public class ColumnFilterPlugin implements FilterPlugin
             }
         }
 
-        return new Schema(builder.build());
+        return new Schema(Collections.unmodifiableList(newColumns));
     }
 
     @Override
     public PageOutput open(final TaskSource taskSource, final Schema inputSchema,
             final Schema outputSchema, final PageOutput output)
     {
-        final PluginTask task = taskSource.loadTask(PluginTask.class);
+        final TaskMapper taskMapper = CONFIG_MAPPER_FACTORY.createTaskMapper();
+        final PluginTask task = taskMapper.map(taskSource, PluginTask.class);
 
         return new PageOutput() {
             private PageReader pageReader = new PageReader(inputSchema);

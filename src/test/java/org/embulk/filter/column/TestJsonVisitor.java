@@ -4,8 +4,10 @@ import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigLoader;
 import org.embulk.config.ConfigSource;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
-import org.embulk.spi.Exec;
+import org.embulk.spi.ExecInternal;
 import org.embulk.spi.Schema;
+import org.embulk.util.config.ConfigMapper;
+import org.embulk.util.config.ConfigMapperFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,6 +27,12 @@ import java.util.HashSet;
 
 public class TestJsonVisitor
 {
+    private static final ConfigMapperFactory CONFIG_MAPPER_FACTORY = ConfigMapperFactory
+            .builder()
+            .addDefaultModules()
+            .build();
+    private static final ConfigMapper CONFIG_MAPPER = CONFIG_MAPPER_FACTORY.createConfigMapper();
+
     @Rule
     public org.embulk.EmbulkTestRuntime runtime = new org.embulk.EmbulkTestRuntime();
 
@@ -46,9 +54,9 @@ public class TestJsonVisitor
         }
         String yamlString = builder.toString();
 
-        ConfigLoader loader = new ConfigLoader(Exec.getModelManager());
+        ConfigLoader loader = new ConfigLoader(ExecInternal.getModelManager());
         ConfigSource config = loader.fromYamlString(yamlString);
-        return config.loadConfig(PluginTask.class);
+        return CONFIG_MAPPER.map(config,PluginTask.class);
     }
 
     private JsonVisitor jsonVisitor(PluginTask task, Schema inputSchema)
