@@ -9,6 +9,7 @@ import org.embulk.spi.PageBuilder;
 import org.embulk.spi.PageReader;
 import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfigException;
+import org.embulk.spi.time.Timestamp;
 import org.embulk.spi.type.BooleanType;
 import org.embulk.spi.type.DoubleType;
 import org.embulk.spi.type.JsonType;
@@ -266,11 +267,11 @@ public class ColumnVisitorImpl implements ColumnVisitor
                 pageBuilder.setNull(outputColumn);
             }
             else {
-                pageBuilder.setTimestamp(outputColumn, defaultValue);
+                pageBuilder.setTimestamp(outputColumn, Timestamp.ofInstant(defaultValue));
             }
         }
         else {
-            pageBuilder.setTimestamp(outputColumn, pageReader.getTimestamp(inputColumn).getInstant());
+            pageBuilder.setTimestamp(outputColumn, pageReader.getTimestamp(inputColumn));
         }
     }
 }
