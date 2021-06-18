@@ -16,14 +16,14 @@ import org.msgpack.value.MapValue;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+
 import static org.embulk.spi.type.Types.JSON;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class TestJsonVisitor
 {
@@ -56,7 +56,7 @@ public class TestJsonVisitor
 
         ConfigLoader loader = new ConfigLoader(ExecInternal.getModelManager());
         ConfigSource config = loader.fromYamlString(yamlString);
-        return CONFIG_MAPPER.map(config,PluginTask.class);
+        return CONFIG_MAPPER.map(config, PluginTask.class);
     }
 
     private JsonVisitor jsonVisitor(PluginTask task, Schema inputSchema)

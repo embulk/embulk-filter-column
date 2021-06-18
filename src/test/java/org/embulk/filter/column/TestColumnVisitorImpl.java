@@ -20,6 +20,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.msgpack.value.ValueFactory;
 
+import java.time.Instant;
+import java.util.List;
+
 import static org.embulk.spi.type.Types.BOOLEAN;
 import static org.embulk.spi.type.Types.DOUBLE;
 import static org.embulk.spi.type.Types.JSON;
@@ -27,9 +30,6 @@ import static org.embulk.spi.type.Types.LONG;
 import static org.embulk.spi.type.Types.STRING;
 import static org.embulk.spi.type.Types.TIMESTAMP;
 import static org.junit.Assert.assertEquals;
-
-import java.time.Instant;
-import java.util.List;
 
 public class TestColumnVisitorImpl
 {
@@ -63,7 +63,7 @@ public class TestColumnVisitorImpl
         ConfigLoader loader = new ConfigLoader(ExecInternal.getModelManager());
         ConfigSource config = loader.fromYamlString(yamlString);
         return CONFIG_MAPPER.map(config, PluginTask.class);
-     }
+    }
 
     private List<Object[]> filter(PluginTask task, Schema inputSchema, Object ... objects)
     {

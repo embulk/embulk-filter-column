@@ -1,7 +1,6 @@
 package org.embulk.filter.column;
 
 import com.google.common.collect.Lists;
-
 import org.embulk.EmbulkTestRuntime;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigLoader;
@@ -65,12 +64,13 @@ public class TestColumnFilterPlugin
     private PluginTask taskFromYamlString(String... lines)
     {
         ConfigSource config = configFromYamlString(lines);
-        return CONFIG_MAPPER.map(config,PluginTask.class);
+        return CONFIG_MAPPER.map(config, PluginTask.class);
     }
 
     private void transaction(ConfigSource config, Schema inputSchema)
     {
-        plugin.transaction(config, inputSchema, new FilterPlugin.Control() {
+        plugin.transaction(config, inputSchema, new FilterPlugin.Control()
+        {
             @Override
             public void run(TaskSource taskSource, Schema outputSchema)
             {
