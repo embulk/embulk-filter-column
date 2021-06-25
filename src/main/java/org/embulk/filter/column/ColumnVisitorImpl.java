@@ -1,22 +1,15 @@
 package org.embulk.filter.column;
 
-import com.google.common.base.Throwables;
-
 import io.github.medjed.jsonpathcompiler.expressions.Utils;
-
 import org.embulk.filter.column.ColumnFilterPlugin.ColumnConfig;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
-
 import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.PageReader;
 import org.embulk.spi.Schema;
 import org.embulk.spi.SchemaConfigException;
-import org.embulk.spi.json.JsonParser;
 import org.embulk.spi.time.Timestamp;
-import org.embulk.spi.time.TimestampParseException;
-import org.embulk.spi.time.TimestampParser;
 import org.embulk.spi.type.BooleanType;
 import org.embulk.spi.type.DoubleType;
 import org.embulk.spi.type.JsonType;
@@ -24,11 +17,14 @@ import org.embulk.spi.type.LongType;
 import org.embulk.spi.type.StringType;
 import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
-
+import org.embulk.util.json.JsonParser;
+import org.embulk.util.timestamp.TimestampFormatter;
 import org.msgpack.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.DateTimeException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 
@@ -148,13 +144,20 @@ public class ColumnVisitorImpl implements ColumnVisitor
         else if (type instanceof TimestampType) {
             if (columnConfig.getDefault().isPresent()) {
                 String time = (String) columnConfig.getDefault().get();
-                TimestampParser parser = new TimestampParser(task, columnConfig);
+                String format = columnConfig.getFormat().orElse(task.getDefaultTimestampFormat());
+                String zoneId = columnConfig.getTimeZoneId().orElse(task.getDefaultTimeZoneId());
+                String defaultDate = columnConfig.getDate().orElse(task.getDefaultDate());
+                TimestampFormatter parser = TimestampFormatter
+                        .builder(format, true)
+                        .setDefaultDateFromString(defaultDate)
+                        .setDefaultZoneFromString(zoneId)
+                        .build();
                 try {
-                    Timestamp defaultValue = parser.parse(time);
+                    Instant defaultValue = parser.parse(time);
                     return defaultValue;
                 }
-                catch (TimestampParseException ex) {
-                    throw Throwables.propagate(ex);
+                catch (DateTimeException ex) {
+                    throw new RuntimeException(ex);
                 }
             }
         }
@@ -259,12 +262,12 @@ public class ColumnVisitorImpl implements ColumnVisitor
     {
         Column inputColumn = outputInputColumnMap.get(outputColumn);
         if (inputColumn == null || pageReader.isNull(inputColumn)) {
-            Timestamp defaultValue = (Timestamp) outputDefaultMap.get(outputColumn);
+            Instant defaultValue = (Instant) outputDefaultMap.get(outputColumn);
             if (defaultValue == null) {
                 pageBuilder.setNull(outputColumn);
             }
             else {
-                pageBuilder.setTimestamp(outputColumn, defaultValue);
+                pageBuilder.setTimestamp(outputColumn, Timestamp.ofInstant(defaultValue));
             }
         }
         else {

@@ -4,7 +4,7 @@ import org.embulk.EmbulkTestRuntime;
 import org.embulk.config.ConfigLoader;
 import org.embulk.config.ConfigSource;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
-import org.embulk.spi.Exec;
+import org.embulk.spi.ExecInternal;
 import org.embulk.spi.Page;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.PageReader;
@@ -13,10 +13,15 @@ import org.embulk.spi.Schema;
 import org.embulk.spi.TestPageBuilderReader.MockPageOutput;
 import org.embulk.spi.time.Timestamp;
 import org.embulk.spi.util.Pages;
+import org.embulk.util.config.ConfigMapper;
+import org.embulk.util.config.ConfigMapperFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.msgpack.value.ValueFactory;
+
+import java.time.Instant;
+import java.util.List;
 
 import static org.embulk.spi.type.Types.BOOLEAN;
 import static org.embulk.spi.type.Types.DOUBLE;
@@ -25,8 +30,6 @@ import static org.embulk.spi.type.Types.LONG;
 import static org.embulk.spi.type.Types.STRING;
 import static org.embulk.spi.type.Types.TIMESTAMP;
 import static org.junit.Assert.assertEquals;
-
-import java.util.List;
 
 public class TestColumnVisitorImpl
 {
@@ -37,6 +40,12 @@ public class TestColumnVisitorImpl
     public void createResource()
     {
     }
+
+    private static final ConfigMapperFactory CONFIG_MAPPER_FACTORY = ConfigMapperFactory
+            .builder()
+            .addDefaultModules()
+            .build();
+    private static final ConfigMapper CONFIG_MAPPER = CONFIG_MAPPER_FACTORY.createConfigMapper();
 
     private ConfigSource config()
     {
@@ -51,9 +60,9 @@ public class TestColumnVisitorImpl
         }
         String yamlString = builder.toString();
 
-        ConfigLoader loader = new ConfigLoader(Exec.getModelManager());
+        ConfigLoader loader = new ConfigLoader(ExecInternal.getModelManager());
         ConfigSource config = loader.fromYamlString(yamlString);
-        return config.loadConfig(PluginTask.class);
+        return CONFIG_MAPPER.map(config, PluginTask.class);
     }
 
     private List<Object[]> filter(PluginTask task, Schema inputSchema, Object ... objects)
@@ -100,16 +109,18 @@ public class TestColumnVisitorImpl
                 .add("remove_me", STRING)
                 .build();
         List<Object[]> records = filter(task, inputSchema,
-                Timestamp.ofEpochSecond(0), "string", Boolean.valueOf(true), Long.valueOf(0), Double.valueOf(0.5), ValueFactory.newString("json"), "remove_me",
-                Timestamp.ofEpochSecond(0), "string", Boolean.valueOf(true), Long.valueOf(0), Double.valueOf(0.5), ValueFactory.newString("json"), "remove_me");
+                Instant.ofEpochSecond(0), "string", Boolean.valueOf(true), Long.valueOf(0), Double.valueOf(0.5), ValueFactory.newString("json"), "remove_me",
+                Instant.ofEpochSecond(0), "string", Boolean.valueOf(true), Long.valueOf(0), Double.valueOf(0.5), ValueFactory.newString("json"), "remove_me");
 
         assertEquals(2, records.size());
-
         Object[] record;
         {
             record = records.get(0);
+            Boolean r = record[0] instanceof Timestamp;
+            System.out.println("---->");
+            System.out.println(record[0].getClass());
             assertEquals(6, record.length);
-            assertEquals(Timestamp.ofEpochSecond(0), record[0]);
+            assertEquals(Instant.ofEpochSecond(0), ((Timestamp)record[0]).getInstant());
             assertEquals("string", record[1]);
             assertEquals(Boolean.valueOf(true), record[2]);
             assertEquals(Long.valueOf(0), record[3]);
@@ -140,7 +151,7 @@ public class TestColumnVisitorImpl
                 .add("remove_me", STRING)
                 .build();
         List<Object[]> records = filter(task, inputSchema,
-                Timestamp.ofEpochSecond(1436745600), "string", Boolean.valueOf(true), Long.valueOf(0), Double.valueOf(0.5), ValueFactory.newString("json"), "remove_me",
+                Instant.ofEpochSecond(1436745600), "string", Boolean.valueOf(true), Long.valueOf(0), Double.valueOf(0.5), ValueFactory.newString("json"), "remove_me",
                 null, null, null, null, null, null, "remove_me");
 
         assertEquals(2, records.size());
@@ -149,7 +160,7 @@ public class TestColumnVisitorImpl
         {
             record = records.get(0);
             assertEquals(6, record.length);
-            assertEquals(Timestamp.ofEpochSecond(1436745600), record[0]);
+            assertEquals(Instant.ofEpochSecond(1436745600), ((Timestamp)record[0]).getInstant());
             assertEquals("string", record[1]);
             assertEquals(Boolean.valueOf(true), record[2]);
             assertEquals(Long.valueOf(0), record[3]);
@@ -159,7 +170,7 @@ public class TestColumnVisitorImpl
         {
             record = records.get(1);
             assertEquals(6, record.length);
-            assertEquals(Timestamp.ofEpochSecond(1436745600), record[0]);
+            assertEquals(Instant.ofEpochSecond(1436745600), ((Timestamp)record[0]).getInstant());
             assertEquals("string", record[1]);
             assertEquals(Boolean.valueOf(true), record[2]);
             assertEquals(Long.valueOf(0), record[3]);
@@ -213,7 +224,7 @@ public class TestColumnVisitorImpl
                 .add("keep_me", STRING)
                 .build();
         List<Object[]> records = filter(task, inputSchema,
-                Timestamp.ofEpochSecond(1436745600), "string", Boolean.valueOf(true), Long.valueOf(0), Double.valueOf(0.5), ValueFactory.newString("json"), "keep_me",
+                Instant.ofEpochSecond(1436745600), "string", Boolean.valueOf(true), Long.valueOf(0), Double.valueOf(0.5), ValueFactory.newString("json"), "keep_me",
                 null, null, null, null, null, null, "keep_me");
 
         assertEquals(2, records.size());
@@ -257,7 +268,7 @@ public class TestColumnVisitorImpl
             record = records.get(0);
             assertEquals(7, record.length);
             assertEquals("keep_me", record[0]);
-            assertEquals(Timestamp.ofEpochSecond(1436745600), record[1]);
+            assertEquals(Instant.ofEpochSecond(1436745600), ((Timestamp)record[1]).getInstant());
             assertEquals("string", record[2]);
             assertEquals(Boolean.valueOf(true), record[3]);
             assertEquals(Long.valueOf(0), record[4]);

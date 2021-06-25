@@ -1,7 +1,6 @@
 package org.embulk.filter.column;
 
 import com.google.common.collect.Lists;
-
 import org.embulk.EmbulkTestRuntime;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigLoader;
@@ -9,9 +8,11 @@ import org.embulk.config.ConfigSource;
 import org.embulk.config.TaskSource;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
 import org.embulk.spi.Column;
-import org.embulk.spi.Exec;
+import org.embulk.spi.ExecInternal;
 import org.embulk.spi.FilterPlugin;
 import org.embulk.spi.Schema;
+import org.embulk.util.config.ConfigMapper;
+import org.embulk.util.config.ConfigMapperFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,6 +27,12 @@ import static org.junit.Assert.assertEquals;
 
 public class TestColumnFilterPlugin
 {
+    private static final ConfigMapperFactory CONFIG_MAPPER_FACTORY = ConfigMapperFactory
+            .builder()
+            .addDefaultModules()
+            .build();
+    private static final ConfigMapper CONFIG_MAPPER = CONFIG_MAPPER_FACTORY.createConfigMapper();
+
     @Rule
     public EmbulkTestRuntime runtime = new EmbulkTestRuntime();
 
@@ -50,19 +57,20 @@ public class TestColumnFilterPlugin
         }
         String yamlString = builder.toString();
 
-        ConfigLoader loader = new ConfigLoader(Exec.getModelManager());
+        ConfigLoader loader = new ConfigLoader(ExecInternal.getModelManager());
         return loader.fromYamlString(yamlString);
     }
 
     private PluginTask taskFromYamlString(String... lines)
     {
         ConfigSource config = configFromYamlString(lines);
-        return config.loadConfig(PluginTask.class);
+        return CONFIG_MAPPER.map(config, PluginTask.class);
     }
 
     private void transaction(ConfigSource config, Schema inputSchema)
     {
-        plugin.transaction(config, inputSchema, new FilterPlugin.Control() {
+        plugin.transaction(config, inputSchema, new FilterPlugin.Control()
+        {
             @Override
             public void run(TaskSource taskSource, Schema outputSchema)
             {
