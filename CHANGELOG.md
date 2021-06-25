@@ -1,3 +1,9 @@
+# 0.8.1 (2021-06-25)
+
+Enhancements:
+
+* Get ready for v0.11 and v1.0
+
 # 0.8.0 (2021-06-10)
 
 Enhancements:
