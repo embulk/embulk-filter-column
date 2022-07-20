@@ -120,7 +120,7 @@ public class TestColumnVisitorImpl
             System.out.println("---->");
             System.out.println(record[0].getClass());
             assertEquals(6, record.length);
-            assertEquals(Instant.ofEpochSecond(0), ((Timestamp)record[0]).getInstant());
+            assertEquals(Instant.ofEpochSecond(0), ((Timestamp) record[0]).getInstant());
             assertEquals("string", record[1]);
             assertEquals(Boolean.valueOf(true), record[2]);
             assertEquals(Long.valueOf(0), record[3]);
@@ -160,7 +160,7 @@ public class TestColumnVisitorImpl
         {
             record = records.get(0);
             assertEquals(6, record.length);
-            assertEquals(Instant.ofEpochSecond(1436745600), ((Timestamp)record[0]).getInstant());
+            assertEquals(Instant.ofEpochSecond(1436745600), ((Timestamp) record[0]).getInstant());
             assertEquals("string", record[1]);
             assertEquals(Boolean.valueOf(true), record[2]);
             assertEquals(Long.valueOf(0), record[3]);
@@ -170,7 +170,7 @@ public class TestColumnVisitorImpl
         {
             record = records.get(1);
             assertEquals(6, record.length);
-            assertEquals(Instant.ofEpochSecond(1436745600), ((Timestamp)record[0]).getInstant());
+            assertEquals(Instant.ofEpochSecond(1436745600), ((Timestamp) record[0]).getInstant());
             assertEquals("string", record[1]);
             assertEquals(Boolean.valueOf(true), record[2]);
             assertEquals(Long.valueOf(0), record[3]);
@@ -268,7 +268,7 @@ public class TestColumnVisitorImpl
             record = records.get(0);
             assertEquals(7, record.length);
             assertEquals("keep_me", record[0]);
-            assertEquals(Instant.ofEpochSecond(1436745600), ((Timestamp)record[1]).getInstant());
+            assertEquals(Instant.ofEpochSecond(1436745600), ((Timestamp) record[1]).getInstant());
             assertEquals("string", record[2]);
             assertEquals(Boolean.valueOf(true), record[3]);
             assertEquals(Long.valueOf(0), record[4]);
