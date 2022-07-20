@@ -12,7 +12,7 @@ repositories {
     jcenter()
 }
 
-group = "io.github.sonots"
+group = "org.embulk"
 version = "0.9.0-SNAPSHOT"
 description = "A filter plugin for Embulk to filter out columns."
 
@@ -21,6 +21,11 @@ targetCompatibility = 1.8
 
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 dependencies {
@@ -51,10 +56,65 @@ embulkPlugin {
     type = "column"
 }
 
+jar {
+    metaInf {
+        from rootProject.file("LICENSE")
+        from rootProject.file("NOTICE")
+    }
+}
+
+sourcesJar {
+    metaInf {
+        from rootProject.file("LICENSE")
+        from rootProject.file("NOTICE")
+    }
+}
+
+javadocJar {
+    metaInf {
+        from rootProject.file("LICENSE")
+        from rootProject.file("NOTICE")
+    }
+}
+
 publishing {
     publications {
-        embulkPluginMaven(MavenPublication) {  // Publish it with "publishEmbulkPluginMavenPublicationToMavenRepository".
-            from components.java  // Must be "components.java". The dependency modification works only for it.
+         maven(MavenPublication) {
+            groupId = project.group
+            artifactId = project.name
+
+             from components.java
+             // javadocJar and sourcesJar are added by java.withJavadocJar() and java.withSourcesJar() above.
+             // See: https://docs.gradle.org/current/javadoc/org/gradle/api/plugins/JavaPluginExtension.html
+
+            pom {  // https://central.sonatype.org/pages/requirements.html
+                packaging "jar"
+
+                name = project.name
+                description = project.description
+                url = "https://www.embulk.org/"
+
+                licenses {
+                    license {
+                        // http://central.sonatype.org/pages/requirements.html#license-information
+                        name = "The Apache License, Version 2.0"
+                        url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+
+                developers {
+                    developer {
+                        name = "Naotoshi Seo"
+                        email = "sonots@gmail.com"
+                    }
+                }
+
+                scm {
+                    connection = "scm:git:git://github.com/embulk/embulk-filter-column.git"
+                    developerConnection = "scm:git:git@github.com:embulk/embulk-filter-column.git"
+                    url = "https://github.com/embulk/embulk-filter-column"
+                }
+            }
         }
     }
     repositories {
@@ -66,8 +126,12 @@ gem {
     authors = [ "Naotoshi Seo" ]
     email = [ "sonots@gmail.com" ]
     summary = "A filter plugin for Embulk to filter out columns"
-    homepage = "https://github.com/sonots/embulk-filter-column"
-    licenses = [ "MIT" ]
+    homepage = "https://github.com/embulk/embulk-filter-column"
+    licenses = [ "Apache-2.0" ]
+
+    from rootProject.file("LICENSE")
+    from rootProject.file("NOTICE_GEM")
+    rename ("NOTICE_GEM", "NOTICE")
 }
 
 gemPush {
