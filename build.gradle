@@ -1,6 +1,7 @@
 plugins {
     id "java"
     id "maven-publish"
+    id "signing"
     id "org.embulk.embulk-plugins" version "0.5.2"
     id "checkstyle"
     id "jacoco"
@@ -117,9 +118,30 @@ publishing {
             }
         }
     }
+
     repositories {
-        // TODO: Configure some public Maven repo(s).
+        maven {  // publishMavenPublicationToMavenCentralRepository
+            name = "mavenCentral"
+            if (project.version.endsWith("-SNAPSHOT")) {
+                url "https://oss.sonatype.org/content/repositories/snapshots"
+            } else {
+                url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            }
+
+            credentials {
+                username = project.hasProperty("ossrhUsername") ? ossrhUsername : ""
+                password = project.hasProperty("ossrhPassword") ? ossrhPassword : ""
+            }
+        }
     }
+}
+
+signing {
+    if (project.hasProperty("signingKey") && project.hasProperty("signingPassword")) {
+        logger.lifecycle("Signing with an in-memory key.")
+        useInMemoryPgpKeys(signingKey, signingPassword)
+    }
+    sign publishing.publications.maven
 }
 
 gem {
