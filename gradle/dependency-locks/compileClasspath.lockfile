@@ -2,7 +2,7 @@
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
 com.fasterxml.jackson.core:jackson-core:2.6.7
-io.github.medjed:JsonPathCompiler:0.0.12
+io.github.medjed:JsonPathCompiler:0.1.2
 org.apache.commons:commons-lang3:3.4
 org.embulk:embulk-api:0.10.36
 org.embulk:embulk-spi:0.10.36

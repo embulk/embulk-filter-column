@@ -5,7 +5,7 @@ com.fasterxml.jackson.core:jackson-annotations:2.6.7
 com.fasterxml.jackson.core:jackson-core:2.6.7
 com.fasterxml.jackson.core:jackson-databind:2.6.7
 com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.6.7
-io.github.medjed:JsonPathCompiler:0.0.12
+io.github.medjed:JsonPathCompiler:0.1.2
 javax.validation:validation-api:1.1.0.Final
 net.minidev:accessors-smart:1.1
 net.minidev:json-smart:2.2.1
