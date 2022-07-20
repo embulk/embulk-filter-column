@@ -36,7 +36,7 @@ dependencies {
 
     compile "org.embulk:embulk-util-config:0.3.1"
 
-    compile("io.github.medjed:JsonPathCompiler:0.0.12") {
+    compile("io.github.medjed:JsonPathCompiler:0.1.2") {
         exclude group: "org.slf4j", module: "slf4j-api"
         exclude group: "org.apache.commons", module: "commons-lang3"
     }
