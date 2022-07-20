@@ -1,9 +1,9 @@
 plugins {
     id "java"
     id "maven-publish"
+    id "org.embulk.embulk-plugins" version "0.5.2"
     id "checkstyle"
     id "jacoco"
-    id "org.embulk.embulk-plugins" version "0.4.0"
 }
 
 repositories {
@@ -16,11 +16,12 @@ group = "org.embulk"
 version = "0.9.0-SNAPSHOT"
 description = "A filter plugin for Embulk to filter out columns."
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
+    options.encoding = "UTF-8"
 }
 
 java {
@@ -29,10 +30,10 @@ java {
 }
 
 dependencies {
-    compileOnly "org.embulk:embulk-spi:0.10.31"
-    compileOnly "org.embulk:embulk-api:0.10.31"
+    compileOnly "org.embulk:embulk-spi:0.10.36"
+    compileOnly "org.embulk:embulk-api:0.10.36"
 
-    compile "org.embulk:embulk-util-config:0.3.0"
+    compile "org.embulk:embulk-util-config:0.3.1"
 
     compile("io.github.medjed:JsonPathCompiler:0.0.12") {
         exclude group: "org.slf4j", module: "slf4j-api"
@@ -44,10 +45,9 @@ dependencies {
     compile "org.apache.commons:commons-lang3:3.4"
 
     testCompile "junit:junit:4.13.2"
-    testCompile "org.embulk:embulk-core:0.10.31"
-    testCompile "org.embulk:embulk-core:0.10.31:tests"
-    //testCompile "org.embulk:embulk-standards:0.10.31"
-    testCompile "org.embulk:embulk-deps:0.10.31"
+    testCompile "org.embulk:embulk-core:0.10.36"
+    testCompile "org.embulk:embulk-deps:0.10.36"
+    testCompile "org.embulk:embulk-junit4:0.10.36"
 }
 
 embulkPlugin {
