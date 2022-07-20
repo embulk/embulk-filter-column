@@ -14,7 +14,7 @@ repositories {
 }
 
 group = "org.embulk"
-version = "0.9.0-SNAPSHOT"
+version = "0.9.0"
 description = "A filter plugin for Embulk to filter out columns."
 
 sourceCompatibility = JavaVersion.VERSION_1_8
