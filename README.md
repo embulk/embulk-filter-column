@@ -1,6 +1,6 @@
 # Column filter plugin for Embulk
 
-[![Build Status](https://secure.travis-ci.org/sonots/embulk-filter-column.png?branch=master)](http://travis-ci.org/sonots/embulk-filter-column)
+![Build Status](https://github.com/embulk/embulk-filter-column/actions/workflows/check.yml/badge.svg?branch=master)
 
 A filter plugin for Embulk to filter out columns
 
@@ -155,8 +155,8 @@ I mean that below example does not work yet (`$.payload.foo` and `$.payload.bar`
 Run example:
 
 ```
-$ ./gradlew classpath
-$ embulk preview -I lib example/example.yml
+$ ./gradlew gem
+$ embulk preview -I build/gemContents/lib example/example.yml
 ```
 
 Run test:
@@ -173,7 +173,7 @@ $ ./gradlew test jacocoTestReport
 
 open build/reports/jacoco/test/html/index.html
 
-Run checkstyle and findbugs:
+Run checkstyle:
 
 ```
 $ ./gradlew check
@@ -184,13 +184,6 @@ Run only checkstyle:
 ```
 $ ./gradlew checkstyleMain
 $ ./gradlew checkstyleTest
-```
-
-Run only findbugs:
-
-```
-$ ./gradlew findbugsMain
-$ ./gradlew findbugsTest
 ```
 
 Release gem:
