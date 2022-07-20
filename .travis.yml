@@ -1,5 +1,0 @@
-language: java
-jdk:
-  - openjdk8
-script:
-  - travis_retry ./gradlew test
