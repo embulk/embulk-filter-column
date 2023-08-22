@@ -2,7 +2,7 @@ plugins {
     id "java"
     id "maven-publish"
     id "signing"
-    id "org.embulk.embulk-plugins" version "0.5.2"
+    id "org.embulk.embulk-plugins" version "0.5.5"
     id "checkstyle"
     id "jacoco"
 }
@@ -17,15 +17,16 @@ group = "org.embulk"
 version = "0.9.0-SNAPSHOT"
 description = "A filter plugin for Embulk to filter out columns."
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
     options.encoding = "UTF-8"
 }
 
 java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+
     withJavadocJar()
     withSourcesJar()
 }
@@ -34,21 +35,21 @@ dependencies {
     compileOnly "org.embulk:embulk-spi:0.10.36"
     compileOnly "org.embulk:embulk-api:0.10.36"
 
-    compile "org.embulk:embulk-util-config:0.3.1"
+    implementation "org.embulk:embulk-util-config:0.3.1"
 
-    compile("io.github.medjed:JsonPathCompiler:0.1.2") {
+    implementation("io.github.medjed:JsonPathCompiler:0.1.2") {
         exclude group: "org.slf4j", module: "slf4j-api"
         exclude group: "org.apache.commons", module: "commons-lang3"
     }
-    compile "org.embulk:embulk-util-timestamp:0.2.1"
-    compile "org.embulk:embulk-util-json:0.1.1"
+    implementation "org.embulk:embulk-util-timestamp:0.2.1"
+    implementation "org.embulk:embulk-util-json:0.1.1"
 
-    compile "org.apache.commons:commons-lang3:3.4"
+    implementation "org.apache.commons:commons-lang3:3.4"
 
-    testCompile "junit:junit:4.13.2"
-    testCompile "org.embulk:embulk-core:0.10.36"
-    testCompile "org.embulk:embulk-deps:0.10.36"
-    testCompile "org.embulk:embulk-junit4:0.10.36"
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.embulk:embulk-core:0.10.36"
+    testImplementation "org.embulk:embulk-deps:0.10.36"
+    testImplementation "org.embulk:embulk-junit4:0.10.36"
 }
 
 embulkPlugin {
@@ -78,6 +79,12 @@ javadocJar {
     }
 }
 
+// It should not publish a `.module` file in Maven Central.
+// https://docs.gradle.org/current/userguide/publishing_gradle_module_metadata.html#sub:disabling-gmm-publication
+tasks.withType(GenerateModuleMetadata) {
+    enabled = false
+}
+
 publishing {
     publications {
          maven(MavenPublication) {
@@ -100,6 +107,7 @@ publishing {
                         // http://central.sonatype.org/pages/requirements.html#license-information
                         name = "The Apache License, Version 2.0"
                         url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                        distribution = "repo"
                     }
                 }
 
