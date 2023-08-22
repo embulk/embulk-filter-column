@@ -32,24 +32,26 @@ java {
 }
 
 dependencies {
-    compileOnly "org.embulk:embulk-spi:0.10.36"
-    compileOnly "org.embulk:embulk-api:0.10.36"
+    compileOnly "org.embulk:embulk-spi:0.11"
 
-    implementation "org.embulk:embulk-util-config:0.3.1"
+    implementation "org.embulk:embulk-util-config:0.3.4"
 
     implementation("io.github.medjed:JsonPathCompiler:0.1.2") {
         exclude group: "org.slf4j", module: "slf4j-api"
         exclude group: "org.apache.commons", module: "commons-lang3"
     }
-    implementation "org.embulk:embulk-util-timestamp:0.2.1"
-    implementation "org.embulk:embulk-util-json:0.1.1"
+    implementation "org.embulk:embulk-util-timestamp:0.2.2"
+    implementation "org.embulk:embulk-util-json:0.2.2"
 
     implementation "org.apache.commons:commons-lang3:3.4"
 
+    testCompileOnly "org.embulk:embulk-spi:0.11"
+
     testImplementation "junit:junit:4.13.2"
-    testImplementation "org.embulk:embulk-core:0.10.36"
-    testImplementation "org.embulk:embulk-deps:0.10.36"
-    testImplementation "org.embulk:embulk-junit4:0.10.36"
+    testImplementation "org.embulk:embulk-core:0.11.0"
+    testImplementation "org.embulk:embulk-deps:0.11.0"
+    testImplementation "org.embulk:embulk-junit4:0.11.0"
+    testImplementation "com.google.guava:guava:18.0"
 }
 
 embulkPlugin {

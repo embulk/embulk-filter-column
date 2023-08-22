@@ -17,7 +17,6 @@
 package org.embulk.filter.column;
 
 import com.google.common.collect.Lists;
-import org.embulk.EmbulkTestRuntime;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigLoader;
 import org.embulk.config.ConfigSource;
@@ -27,6 +26,7 @@ import org.embulk.spi.Column;
 import org.embulk.spi.ExecInternal;
 import org.embulk.spi.FilterPlugin;
 import org.embulk.spi.Schema;
+import org.embulk.test.EmbulkTestRuntime;
 import org.embulk.util.config.ConfigMapper;
 import org.embulk.util.config.ConfigMapperFactory;
 import org.junit.Before;

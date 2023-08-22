@@ -50,7 +50,7 @@ public class TestJsonVisitor
     private static final ConfigMapper CONFIG_MAPPER = CONFIG_MAPPER_FACTORY.createConfigMapper();
 
     @Rule
-    public org.embulk.EmbulkTestRuntime runtime = new org.embulk.EmbulkTestRuntime();
+    public org.embulk.test.EmbulkTestRuntime runtime = new org.embulk.test.EmbulkTestRuntime();
 
     @Before
     public void createResource()
