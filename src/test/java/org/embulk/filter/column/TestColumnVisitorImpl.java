@@ -16,7 +16,6 @@
 
 package org.embulk.filter.column;
 
-import org.embulk.EmbulkTestRuntime;
 import org.embulk.config.ConfigLoader;
 import org.embulk.config.ConfigSource;
 import org.embulk.filter.column.ColumnFilterPlugin.PluginTask;
@@ -24,11 +23,12 @@ import org.embulk.spi.ExecInternal;
 import org.embulk.spi.Page;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.PageReader;
-import org.embulk.spi.PageTestUtils;
 import org.embulk.spi.Schema;
-import org.embulk.spi.TestPageBuilderReader.MockPageOutput;
 import org.embulk.spi.time.Timestamp;
 import org.embulk.spi.util.Pages;
+import org.embulk.test.EmbulkTestRuntime;
+import org.embulk.test.PageTestUtils;
+import org.embulk.test.TestPageBuilderReader.MockPageOutput;
 import org.embulk.util.config.ConfigMapper;
 import org.embulk.util.config.ConfigMapperFactory;
 import org.junit.Before;
